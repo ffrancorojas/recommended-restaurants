@@ -5,7 +5,7 @@ import { styles } from './homeScreen.styles';
 import { HomeScreenProps } from './homeScreen.types';
 import { AppText, AppButton } from '@/components';
 
-export const HomeScreen = ({ navigation }: HomeScreenProps) => {
+export const HomeScreen = ({ navigation, onLogout }: HomeScreenProps) => {
   const { restaurants } = useRestaurants();
   return (
     <SafeAreaView style={styles.safe}>
@@ -22,6 +22,9 @@ export const HomeScreen = ({ navigation }: HomeScreenProps) => {
           variant="secondary"
           onPress={() => navigation.navigate('RestaurantList')}
         />
+      </View>
+      <View style={styles.footer}>
+        <AppButton label="Cerrar sesión" variant="secondary" onPress={onLogout} />
       </View>
     </SafeAreaView>
   );
