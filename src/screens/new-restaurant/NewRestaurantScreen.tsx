@@ -1,8 +1,8 @@
-import { RestaurantForm } from '@/components';
+import { AppText, RestaurantForm } from '@/components';
 import { useRestaurants } from '@/services';
 import { EMPTY_RESTAURANT_FORM, RestaurantFormData } from '@/types';
 import { useState } from 'react';
-import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
+import { Alert, Pressable, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { styles } from './newRestaurantScreen.styles';
 import { NewRestaurantScreenProps } from './newRestaurantScreen.types';
@@ -34,9 +34,9 @@ export function Header({ title, onBack }: { title: string; onBack: () => void })
   return (
     <View style={styles.header}>
       <Pressable onPress={onBack} hitSlop={12}>
-        <Text style={styles.back}>‹ Inicio</Text>
+        <AppText style={styles.back} text="‹ Inicio" />
       </Pressable>
-      <Text style={styles.headerTitle}>{title}</Text>
+      <AppText style={styles.headerTitle} text={title} />
       <View style={styles.spacer} />
     </View>
   );

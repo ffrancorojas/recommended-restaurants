@@ -1,9 +1,9 @@
-import { RestaurantCard } from '@/components';
+import { AppText, RestaurantCard } from '@/components';
 import { Header } from '@/screens';
 import { useRestaurants } from '@/services';
 import { RESTAURANT_TYPES, RestaurantFilters } from '@/types';
 import { useMemo, useState } from 'react';
-import { Alert, FlatList, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { Alert, FlatList, Pressable, ScrollView, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { styles } from './restaurantListScreen.styles';
 import { RestaurantListScreenProps } from './restaurantListScreen.types';
@@ -67,9 +67,10 @@ export const RestaurantListScreen = ({ navigation }: RestaurantListScreenProps) 
               onPress={() => setFilters({ ...filters, type: filters.type === type ? '' : type })}
               style={[styles.chip, filters.type === type && styles.chipSelected]}
             >
-              <Text style={[styles.chipText, filters.type === type && styles.chipTextSelected]}>
-                {type}
-              </Text>
+              <AppText
+                style={[styles.chipText, filters.type === type && styles.chipTextSelected]}
+                text={type}
+              />
             </Pressable>
           ))}
         </ScrollView>
@@ -82,8 +83,11 @@ export const RestaurantListScreen = ({ navigation }: RestaurantListScreenProps) 
           contentContainerStyle={styles.list}
           ListEmptyComponent={
             <View style={styles.empty}>
-              <Text style={styles.emptyTitle}>Aún no hay resultados</Text>
-              <Text style={styles.emptyText}>Añade tu primera recomendación desde Inicio.</Text>
+              <AppText style={styles.emptyTitle} text="Aún no hay resultados" />
+              <AppText
+                style={styles.emptyText}
+                text="Añade tu primera recomendación desde Inicio."
+              />
             </View>
           }
         />

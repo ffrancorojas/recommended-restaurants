@@ -1,6 +1,6 @@
-import { AppButton, AppTextField } from '@/components';
+import { AppButton, AppText, AppTextField } from '@/components';
 import { RESTAURANT_TYPES } from '@/types';
-import { Alert, Linking, Pressable, Text, TextInput, View } from 'react-native';
+import { Alert, Linking, Pressable, TextInput, View } from 'react-native';
 import { styles } from './restaurantForm.styles';
 import { RestaurantFormProps } from './restaurantForm.types';
 
@@ -21,7 +21,7 @@ export const RestaurantForm = ({ value, onChange, onSave }: RestaurantFormProps)
   return (
     <View>
       <View style={styles.field}>
-        <Text style={styles.label}>Restaurante *</Text>
+        <AppText style={styles.label} text="Restaurante *" />
         <View style={styles.nameRow}>
           <TextInput
             style={[styles.input, styles.nameInput]}
@@ -35,19 +35,20 @@ export const RestaurantForm = ({ value, onChange, onSave }: RestaurantFormProps)
             style={[styles.searchIcon, styles.mapsIcon]}
             onPress={() => openSearch('maps')}
           >
-            <Text style={styles.mapsSymbol}>⌖</Text>
+            <AppText style={styles.mapsSymbol} text="⌖" />
           </Pressable>
           <Pressable
             accessibilityLabel="Buscar en Google"
             style={[styles.searchIcon, styles.googleIcon]}
             onPress={() => openSearch('google')}
           >
-            <Text style={styles.googleSymbol}>G</Text>
+            <AppText style={styles.googleSymbol} text="G" />
           </Pressable>
         </View>
-        <Text style={styles.help}>
-          Busca el nombre en Google Maps o Google para consultar dirección y opiniones.
-        </Text>
+        <AppText
+          style={styles.help}
+          text="Busca el nombre en Google Maps o Google para consultar dirección y opiniones."
+        />
       </View>
       <AppTextField
         label="Localidad"
@@ -67,7 +68,7 @@ export const RestaurantForm = ({ value, onChange, onSave }: RestaurantFormProps)
         onChangeText={(text) => onChange('price', text)}
         placeholder="Ej. 20–30 € por persona"
       />
-      <Text style={styles.label}>Tipo de local</Text>
+      <AppText style={styles.label} text="Tipo de local" />
       <View style={styles.chips}>
         {RESTAURANT_TYPES.map((type) => (
           <Pressable
@@ -75,9 +76,10 @@ export const RestaurantForm = ({ value, onChange, onSave }: RestaurantFormProps)
             onPress={() => onChange('type', value.type === type ? '' : type)}
             style={[styles.chip, value.type === type && styles.chipSelected]}
           >
-            <Text style={[styles.chipText, value.type === type && styles.chipTextSelected]}>
-              {type}
-            </Text>
+            <AppText
+              style={[styles.chipText, value.type === type && styles.chipTextSelected]}
+              text={type}
+            />
           </Pressable>
         ))}
       </View>

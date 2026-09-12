@@ -1,5 +1,6 @@
+import { AppText } from '../text';
 import { useState } from 'react';
-import { Alert, Linking, Pressable, Text, View } from 'react-native';
+import { Alert, Linking, Pressable, View } from 'react-native';
 import { styles } from './restaurantCard.styles';
 import { InFoParams, RestaurantCardProps } from './restaurantCard.types';
 
@@ -24,7 +25,7 @@ export const RestaurantCard = ({ restaurant, onDelete }: RestaurantCardProps) =>
     <View style={styles.card}>
       <View style={styles.top}>
         <View style={styles.nameArea}>
-          <Text style={styles.title}>{restaurant.name}</Text>
+          <AppText style={styles.title} text={restaurant.name} />
         </View>
         <Pressable
           accessibilityRole="link"
@@ -32,7 +33,7 @@ export const RestaurantCard = ({ restaurant, onDelete }: RestaurantCardProps) =>
           style={[styles.iconButton, styles.mapsIcon]}
           onPress={() => openSearch('maps')}
         >
-          <Text style={styles.mapsSymbol}>⌖</Text>
+          <AppText style={styles.mapsSymbol} text="⌖" />
         </Pressable>
         <Pressable
           accessibilityRole="link"
@@ -40,7 +41,7 @@ export const RestaurantCard = ({ restaurant, onDelete }: RestaurantCardProps) =>
           style={[styles.iconButton, styles.googleIcon]}
           onPress={() => openSearch('google')}
         >
-          <Text style={styles.googleSymbol}>G</Text>
+          <AppText style={styles.googleSymbol} text="G" />
         </Pressable>
         <Pressable
           accessibilityRole="button"
@@ -54,8 +55,11 @@ export const RestaurantCard = ({ restaurant, onDelete }: RestaurantCardProps) =>
       </View>
       {expanded ? (
         <View style={styles.details}>
-          <Text style={styles.locality}>⌖ {restaurant.locality || 'Localidad pendiente'}</Text>
-          {restaurant.type ? <Text style={styles.tag}>{restaurant.type}</Text> : null}
+          <AppText
+            style={styles.locality}
+            text={`⌖ ${restaurant.locality || 'Localidad pendiente'}`}
+          />
+          {restaurant.type ? <AppText style={styles.tag} text={restaurant.type} /> : null}
           <Info label="Para pedir" text={restaurant.dishes} />
           <Info label="Precio medio" text={restaurant.price} />
           <Info label="Observaciones" text={restaurant.notes} />
@@ -65,7 +69,7 @@ export const RestaurantCard = ({ restaurant, onDelete }: RestaurantCardProps) =>
             style={styles.deleteButton}
             onPress={onDelete}
           >
-            <Text style={styles.delete}>Eliminar</Text>
+            <AppText style={styles.delete} text="Eliminar" />
           </Pressable>
         </View>
       ) : null}
@@ -75,8 +79,8 @@ export const RestaurantCard = ({ restaurant, onDelete }: RestaurantCardProps) =>
 const Info = ({ label, text }: InFoParams) => {
   return text ? (
     <View style={styles.info}>
-      <Text style={styles.infoLabel}>{label}</Text>
-      <Text style={styles.infoText}>{text}</Text>
+      <AppText style={styles.infoLabel} text={label} />
+      <AppText style={styles.infoText} text={text} />
     </View>
   ) : null;
 };

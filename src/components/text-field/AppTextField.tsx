@@ -1,11 +1,12 @@
-import { Text, TextInput, View } from 'react-native';
+import { AppText } from '../text';
+import { TextInput, View } from 'react-native';
 import { styles } from './appTextField.styles';
 import { AppTextFieldProps } from './appTextField.types';
 
 export const AppTextField = ({ label, multiline, ...props }: AppTextFieldProps) => {
   return (
     <View style={styles.field}>
-      <Text style={styles.label}>{label}</Text>
+      <AppText style={styles.label} text={label} />
       <TextInput
         multiline={multiline}
         style={[styles.input, multiline && styles.textarea]}

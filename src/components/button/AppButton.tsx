@@ -1,4 +1,5 @@
-import { Pressable, Text } from 'react-native';
+import { AppText } from '../text';
+import { Pressable } from 'react-native';
 import { styles } from './AppButton.styles';
 import { AppButtonProps } from './appButton.types';
 
@@ -8,11 +9,10 @@ export const AppButton = ({ label, onPress, variant = 'primary' }: AppButtonProp
       onPress={onPress}
       style={[styles.button, variant === 'primary' ? styles.primary : styles.secondary]}
     >
-      <Text
+      <AppText
         style={[styles.text, variant === 'primary' ? styles.primaryText : styles.secondaryText]}
-      >
-        {label}
-      </Text>
+        text={label}
+      />
     </Pressable>
   );
 };
