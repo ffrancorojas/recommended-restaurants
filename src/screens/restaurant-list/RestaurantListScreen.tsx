@@ -3,27 +3,31 @@ import { Header } from '@/screens';
 import { useRestaurants } from '@/services';
 import { RESTAURANT_TYPES, RestaurantFilters } from '@/types';
 import { useMemo, useState } from 'react';
-import { Alert, FlatList, Pressable, ScrollView, TextInput, View } from 'react-native';
+import { Alert, FlatList, Keyboard, Pressable, ScrollView, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { styles } from './restaurantListScreen.styles';
 import { RestaurantListScreenProps } from './restaurantListScreen.types';
 
-const initialFilters: RestaurantFilters = { query: '', locality: '', price: '', type: '' };
+const initialFilters: RestaurantFilters = { query: '', locality: '', price: '', types: [] };
 export const RestaurantListScreen = ({ navigation }: RestaurantListScreenProps) => {
   const { restaurants, removeRestaurant } = useRestaurants();
   const [filters, setFilters] = useState<RestaurantFilters>(initialFilters);
+  const [typesOpen, setTypesOpen] = useState(false);
+  const [filtersVisible, setFiltersVisible] = useState(true);
+  const activeFilterCount = [filters.query, filters.locality, filters.price].filter(Boolean).length
+    + (filters.types.length ? 1 : 0);
   const results = useMemo(
     () =>
       restaurants.filter((restaurant) => {
         const words =
-          `${restaurant.name} ${restaurant.locality} ${restaurant.dishes} ${restaurant.notes}`.toLowerCase();
+          `${restaurant.name} ${restaurant.locality} ${restaurant.dishes} ${restaurant.notes} ${restaurant.recommendedBy}`.toLowerCase();
         return (
           words.includes(filters.query.toLowerCase()) &&
           (!filters.locality ||
             restaurant.locality.toLowerCase().includes(filters.locality.toLowerCase())) &&
           (!filters.price ||
             restaurant.price.toLowerCase().includes(filters.price.toLowerCase())) &&
-          (!filters.type || restaurant.type === filters.type)
+          (!filters.types.length || filters.types.includes(restaurant.type))
         );
       }),
     [restaurants, filters]
@@ -37,43 +41,95 @@ export const RestaurantListScreen = ({ navigation }: RestaurantListScreenProps) 
     <SafeAreaView style={styles.safe}>
       <Header title="Mi listado" onBack={() => navigation.goBack()} />
       <View style={styles.page}>
-        <TextInput
-          style={styles.search}
-          placeholder="Buscar en mis recomendaciones"
-          placeholderTextColor="#9A9088"
-          value={filters.query}
-          onChangeText={(query) => setFilters({ ...filters, query })}
-        />
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.filters}
+        <Pressable
+          accessibilityRole="button"
+          accessibilityState={{ expanded: filtersVisible }}
+          style={styles.filtersToggle}
+          onPress={() => {
+            Keyboard.dismiss();
+            setFiltersVisible((visible) => !visible);
+          }}
         >
-          <TextInput
-            style={styles.mini}
-            placeholder="Localidad"
-            value={filters.locality}
-            onChangeText={(locality) => setFilters({ ...filters, locality })}
+          <AppText
+            style={styles.dropdownLabel}
+            text={`${filtersVisible ? 'Ocultar filtros' : 'Mostrar filtros'}${activeFilterCount ? ` (${activeFilterCount} activos)` : ''}`}
           />
-          <TextInput
-            style={styles.mini}
-            placeholder="Precio"
-            value={filters.price}
-            onChangeText={(price) => setFilters({ ...filters, price })}
-          />
-          {RESTAURANT_TYPES.map((type) => (
+          <AppText style={styles.dropdownLabel} text={filtersVisible ? '▴' : '▾'} />
+        </Pressable>
+        {filtersVisible ? (
+          <View>
+            <TextInput
+              style={styles.search}
+              placeholder="Buscar en mis recomendaciones"
+              placeholderTextColor="#9A9088"
+              value={filters.query}
+              onChangeText={(query) => setFilters({ ...filters, query })}
+            />
+            <View style={styles.filters}>
+              <TextInput
+                style={styles.mini}
+                placeholder="Localidad"
+                value={filters.locality}
+                onChangeText={(locality) => setFilters({ ...filters, locality })}
+              />
+              <TextInput
+                style={styles.mini}
+                placeholder="Precio"
+                value={filters.price}
+                onChangeText={(price) => setFilters({ ...filters, price })}
+              />
+            </View>
             <Pressable
-              key={type}
-              onPress={() => setFilters({ ...filters, type: filters.type === type ? '' : type })}
-              style={[styles.chip, filters.type === type && styles.chipSelected]}
+              accessibilityRole="button"
+              accessibilityLabel="Filtrar por tipos de comida"
+              accessibilityState={{ expanded: typesOpen }}
+              style={styles.dropdownTrigger}
+              onPress={() => setTypesOpen((open) => !open)}
             >
               <AppText
-                style={[styles.chipText, filters.type === type && styles.chipTextSelected]}
-                text={type}
+                style={styles.dropdownLabel}
+                text={filters.types.length ? 'Tipos de comida (' + filters.types.length + ')' : 'Todos los tipos de comida'}
               />
+              <AppText style={styles.dropdownLabel} text={typesOpen ? '▴' : '▾'} />
             </Pressable>
-          ))}
-        </ScrollView>
+            {typesOpen ? (
+              <View style={styles.dropdown}>
+                <Pressable
+                  accessibilityRole="button"
+                  onPress={() => setFilters((current) => ({ ...current, types: [] }))}
+                  style={styles.option}
+                >
+                  <AppText style={styles.dropdownLabel} text="Limpiar selección · Mostrar todos" />
+                </Pressable>
+                <ScrollView style={styles.options} keyboardShouldPersistTaps="handled" nestedScrollEnabled>
+                  {RESTAURANT_TYPES.map((type) => {
+                    const selected = filters.types.includes(type);
+                    return (
+                      <Pressable
+                        key={type}
+                        accessibilityRole="checkbox"
+                        accessibilityLabel={type}
+                        accessibilityState={{ checked: selected }}
+                        style={styles.option}
+                        onPress={() => setFilters((current) => ({
+                          ...current,
+                          types: current.types.includes(type)
+                            ? current.types.filter((item) => item !== type)
+                            : [...current.types, type],
+                        }))}
+                      >
+                        <View style={[styles.checkbox, selected && styles.checkboxSelected]}>
+                          <AppText style={styles.checkmark} text={selected ? '✓' : ''} />
+                        </View>
+                        <AppText style={styles.dropdownLabel} text={type} />
+                      </Pressable>
+                    );
+                  })}
+                </ScrollView>
+              </View>
+            ) : null}
+          </View>
+        ) : null}
         <FlatList
           data={results}
           keyExtractor={(item) => item.id}
@@ -86,7 +142,7 @@ export const RestaurantListScreen = ({ navigation }: RestaurantListScreenProps) 
               <AppText style={styles.emptyTitle} text="Aún no hay resultados" />
               <AppText
                 style={styles.emptyText}
-                text="Añade tu primera recomendación desde Inicio."
+                text={restaurants.length ? 'Prueba a cambiar o limpiar los filtros.' : 'Añade tu primera recomendación desde Inicio.'}
               />
             </View>
           }

@@ -53,15 +53,25 @@ export const RestaurantCard = ({ restaurant, onDelete }: RestaurantCardProps) =>
           <View style={[styles.chevron, expanded && styles.chevronExpanded]} />
         </Pressable>
       </View>
+      <View style={styles.metadata}>
+        <AppText
+          style={styles.locality}
+          text={`⌖ ${restaurant.locality || 'Localidad pendiente'}`}
+        />
+        {restaurant.type ? <AppText style={styles.tag} text={restaurant.type} /> : null}
+        {restaurant.price ? (
+          <AppText style={styles.price} text={`Precio medio: ${restaurant.price}`} />
+        ) : null}
+      </View>
+      {restaurant.recommendedBy ? (
+        <AppText
+          style={styles.recommendedBy}
+          text={`Recomendado por ${restaurant.recommendedBy}`}
+        />
+      ) : null}
       {expanded ? (
         <View style={styles.details}>
-          <AppText
-            style={styles.locality}
-            text={`⌖ ${restaurant.locality || 'Localidad pendiente'}`}
-          />
-          {restaurant.type ? <AppText style={styles.tag} text={restaurant.type} /> : null}
-          <Info label="Para pedir" text={restaurant.dishes} />
-          <Info label="Precio medio" text={restaurant.price} />
+          <Info label="Platos recomendados" text={restaurant.dishes} />
           <Info label="Observaciones" text={restaurant.notes} />
           <Pressable
             accessibilityRole="button"

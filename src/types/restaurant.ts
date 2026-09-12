@@ -28,7 +28,7 @@ export type RestaurantFilters = {
   query: string;
   locality: string;
   price: string;
-  type: RestaurantType;
+  types: RestaurantType[];
 };
 
 export const EMPTY_RESTAURANT_FORM: RestaurantFormData = {

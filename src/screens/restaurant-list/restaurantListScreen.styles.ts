@@ -2,8 +2,14 @@ import { colors } from '@/theme';
 import { StyleSheet } from 'react-native';
 
 export const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.background },
-  page: { flex: 1, paddingHorizontal: 20 },
+  safe: { flex: 1, justifyContent: 'flex-start', backgroundColor: colors.background },
+  page: { flex: 1, justifyContent: 'flex-start', paddingHorizontal: 20 },
+  filtersToggle: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    minHeight: 44, marginBottom: 10, paddingHorizontal: 12,
+    borderRadius: 10, borderWidth: 1, borderColor: colors.border,
+    backgroundColor: colors.surface,
+  },
   search: {
     backgroundColor: colors.surface,
     borderWidth: 1,
@@ -13,9 +19,9 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 13,
     marginBottom: 10,
   },
-  filters: { gap: 8, paddingBottom: 12, alignItems: 'center' },
+  filters: { flexDirection: 'row', gap: 8, paddingBottom: 10 },
   mini: {
-    width: 115,
+    flex: 1,
     height: 38,
     backgroundColor: colors.surface,
     borderRadius: 10,
@@ -24,17 +30,27 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 10,
     fontSize: 13,
   },
-  chip: {
-    paddingHorizontal: 10,
-    paddingVertical: 10,
-    borderRadius: 10,
-    backgroundColor: colors.softSand,
+  dropdownTrigger: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    minHeight: 44, paddingHorizontal: 12, borderRadius: 10,
+    backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border,
+    marginBottom: 10,
   },
-  chipSelected: { backgroundColor: colors.secondary },
-  chipText: { fontSize: 12, fontWeight: '700', color: '#5D554F' },
-  chipTextSelected: { color: colors.surface },
-  list: { paddingBottom: 28 },
-  empty: { paddingTop: 75, alignItems: 'center' },
+  dropdownLabel: { fontSize: 13, color: colors.text, flexShrink: 1 },
+  dropdown: {
+    borderWidth: 1, borderColor: colors.border, borderRadius: 10,
+    backgroundColor: colors.surface, marginBottom: 10, overflow: 'hidden',
+  },
+  options: { flexGrow: 0, maxHeight: 180 },
+  option: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 44, paddingHorizontal: 12 },
+  checkbox: {
+    width: 22, height: 22, borderRadius: 5, borderWidth: 1, borderColor: colors.border,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  checkboxSelected: { backgroundColor: colors.secondary, borderColor: colors.secondary },
+  checkmark: { color: colors.surface, fontWeight: '800' },
+  list: { justifyContent: 'flex-start', paddingBottom: 28 },
+  empty: { paddingTop: 12, alignItems: 'flex-start' },
   emptyTitle: { fontSize: 20, fontWeight: '900', color: colors.text },
   emptyText: { fontSize: 14, color: colors.muted, marginTop: 8 },
 });

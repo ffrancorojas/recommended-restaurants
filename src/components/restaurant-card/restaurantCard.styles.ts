@@ -46,11 +46,15 @@ export const styles = StyleSheet.create({
     marginTop: 8,
   },
   title: { fontSize: 19, fontWeight: '900', color: colors.text },
-  locality: { color: colors.muted, marginTop: 5 },
+  metadata: {
+    flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 8, marginTop: 8,
+  },
+  locality: { color: colors.muted, flexShrink: 1 },
+  price: { color: colors.text, fontSize: 12, fontWeight: '700', flexShrink: 1 },
+  recommendedBy: { color: colors.muted, fontSize: 12, marginTop: 8 },
   delete: { color: colors.danger, fontSize: 12, fontWeight: '700' },
   tag: {
     alignSelf: 'flex-start',
-    marginTop: 12,
     backgroundColor: colors.softGreen,
     color: '#276559',
     fontWeight: '800',
@@ -60,7 +64,7 @@ export const styles = StyleSheet.create({
     borderRadius: 12,
     overflow: 'hidden',
   },
-  info: { marginTop: 12 },
+  info: { marginBottom: 8 },
   infoLabel: {
     color: '#9A9088',
     fontWeight: '800',
