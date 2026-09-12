@@ -2,7 +2,7 @@ import { AppText, RestaurantForm } from '@/components';
 import { useRestaurants } from '@/services';
 import { EMPTY_RESTAURANT_FORM, RestaurantFormData } from '@/types';
 import { useState } from 'react';
-import { Alert, Pressable, ScrollView, View } from 'react-native';
+import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { styles } from './newRestaurantScreen.styles';
 import { NewRestaurantScreenProps } from './newRestaurantScreen.types';
@@ -22,12 +22,17 @@ export const NewRestaurantScreen = ({ navigation }: NewRestaurantScreenProps) =>
     navigation.replace('RestaurantList');
   };
   return (
-    <SafeAreaView style={styles.safe}>
-      <Header title="Nueva entrada" onBack={() => navigation.goBack()} />
-      <ScrollView contentContainerStyle={styles.form} keyboardShouldPersistTaps="handled">
-        <RestaurantForm value={form} onChange={update} onSave={save} />
-      </ScrollView>
-    </SafeAreaView>
+    <KeyboardAvoidingView
+      style={styles.keyboard}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      <SafeAreaView style={styles.safe}>
+        <Header title="Nueva entrada" onBack={() => navigation.goBack()} />
+        <ScrollView contentContainerStyle={styles.form} keyboardShouldPersistTaps="handled">
+          <RestaurantForm value={form} onChange={update} onSave={save} />
+        </ScrollView>
+      </SafeAreaView>
+    </KeyboardAvoidingView>
   );
 };
 export function Header({ title, onBack }: { title: string; onBack: () => void }) {

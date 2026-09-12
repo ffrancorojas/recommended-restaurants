@@ -5,7 +5,12 @@ const STORAGE_KEY = '@restaurantes-recomendados/v1';
 
 export async function loadRestaurants(): Promise<Restaurant[]> {
   const raw = await AsyncStorage.getItem(STORAGE_KEY);
-  return raw ? (JSON.parse(raw) as Restaurant[]) : [];
+  return raw
+    ? (JSON.parse(raw) as Restaurant[]).map((restaurant) => ({
+        ...restaurant,
+        recommendedBy: restaurant.recommendedBy ?? '',
+      }))
+    : [];
 }
 export async function saveRestaurants(restaurants: Restaurant[]): Promise<void> {
   await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(restaurants));

@@ -19,6 +19,7 @@ export type RestaurantFormData = {
   price: string;
   type: RestaurantType;
   notes: string;
+  recommendedBy: string;
 };
 
 export type Restaurant = RestaurantFormData & { id: string; createdAt: string };
@@ -37,4 +38,5 @@ export const EMPTY_RESTAURANT_FORM: RestaurantFormData = {
   price: '',
   type: '',
   notes: '',
+  recommendedBy: '',
 };

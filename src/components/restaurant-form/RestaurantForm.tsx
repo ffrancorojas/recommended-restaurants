@@ -1,4 +1,5 @@
-import { AppButton, AppText, AppTextField } from '@/components';
+import { AppButton, AppText } from '@/components';
+import { AppTextField } from '@/components/text-field';
 import { RESTAURANT_TYPES } from '@/types';
 import { Alert, Linking, Pressable, TextInput, View } from 'react-native';
 import { styles } from './restaurantForm.styles';
@@ -84,10 +85,16 @@ export const RestaurantForm = ({ value, onChange, onSave }: RestaurantFormProps)
         ))}
       </View>
       <AppTextField
+        label="Recomendado por"
+        value={value.recommendedBy}
+        onChangeText={(text) => onChange('recommendedBy', text)}
+        placeholder="Nombre de la persona que te lo recomendó"
+      />
+      <AppTextField
         label="Observaciones"
         value={value.notes}
         onChangeText={(text) => onChange('notes', text)}
-        placeholder="Quién lo recomendó, qué pedir, reserva..."
+        placeholder="Reserva, detalles a tener en cuenta..."
         multiline
       />
       <AppButton label="Guardar restaurante" onPress={onSave} />
