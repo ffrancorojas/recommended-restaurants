@@ -1,7 +1,7 @@
 import { AppText } from '../text';
 import { TextInput, View } from 'react-native';
 import { styles } from './appTextField.styles';
-import { AppTextFieldProps } from './appTextField.types';
+import type { AppTextFieldProps } from '.';
 
 export const AppTextField = ({ label, multiline, ...props }: AppTextFieldProps) => {
   return (

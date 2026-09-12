@@ -1,5 +1,5 @@
+import { colors } from '@/theme';
 import { StyleSheet } from 'react-native';
-import { colors } from '../../theme/theme';
 
 export const styles = StyleSheet.create({
   button: { borderRadius: 16, paddingVertical: 17, alignItems: 'center', marginTop: 10 },

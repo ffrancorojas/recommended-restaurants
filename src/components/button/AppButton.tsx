@@ -1,6 +1,6 @@
 import { AppText } from '../text';
 import { Pressable } from 'react-native';
-import { styles } from './AppButton.styles';
+import { styles } from './appButton.styles';
 import { AppButtonProps } from './appButton.types';
 
 export const AppButton = ({ label, onPress, variant = 'primary' }: AppButtonProps) => {
