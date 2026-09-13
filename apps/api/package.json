@@ -1,0 +1,37 @@
+{
+  "name": "@restaurantes/api",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "nest start --watch",
+    "start": "node --env-file-if-exists=.env dist/main.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "db:migrate": "node --env-file-if-exists=.env scripts/migrate.mjs",
+    "test": "npm run build && node --env-file-if-exists=.env --test test/*.test.cjs"
+  },
+  "dependencies": {
+    "@nestjs/common": "^11.2.3",
+    "@nestjs/core": "^11.2.3",
+    "@nestjs/platform-express": "^11.2.3",
+    "@nestjs/swagger": "^11.0.0",
+    "@nestjs/throttler": "^6.5.0",
+    "@restaurantes/contracts": "*",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.2",
+    "helmet": "^8.1.0",
+    "nodemailer": "^10.0.9",
+    "pg": "^8.23.0",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^11.0.0",
+    "@nestjs/testing": "^11.2.3",
+    "@types/express": "^5.0.0",
+    "@types/node": "^24.0.0",
+    "@types/nodemailer": "^8.0.1",
+    "@types/pg": "^8.15.0",
+    "typescript": "^5.9.3"
+  }
+}

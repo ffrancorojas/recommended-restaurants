@@ -1,0 +1,20 @@
+{
+  "expo": {
+    "name": "Restaurantes recomendados",
+    "slug": "restaurantes-recomendados",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "android": {
+      "package": "com.restaurantes.recomendados"
+    },
+    "ios": {
+      "bundleIdentifier": "com.restaurantes.recomendados"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "9d3e23ef-43cc-4134-8099-64517397b234"
+      }
+    }
+  }
+}
