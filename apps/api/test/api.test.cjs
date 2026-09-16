@@ -83,7 +83,7 @@ test('migraciones repetibles, salud y documentación OpenAPI', async () => {
   assert.equal(result.status, 200);
   assert.deepEqual(result.body, { status: 'ok' });
   const migrations = await db.query('SELECT * FROM schema_migrations');
-  assert.equal(migrations.rowCount, 6);
+  assert.equal(migrations.rowCount, 7);
   const docs = await fetch(`${baseUrl}/api/docs-json`).then((response) => response.json());
   assert.ok(docs.paths['/api/v1/restaurants/{id}'].patch);
 });
