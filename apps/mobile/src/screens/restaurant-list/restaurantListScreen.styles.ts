@@ -4,12 +4,31 @@ import { StyleSheet } from 'react-native';
 export const styles = StyleSheet.create({
   safe: { flex: 1, justifyContent: 'flex-start', backgroundColor: colors.background },
   page: { flex: 1, justifyContent: 'flex-start', paddingHorizontal: 20 },
+  actions: { flexDirection: 'row', alignItems: 'stretch', gap: 10, marginBottom: 10 },
+  addButton: {
+    flex: 1, minWidth: 0,
+    minHeight: 48, alignItems: 'center', justifyContent: 'center',
+    paddingHorizontal: 16, paddingVertical: 12,
+    borderRadius: 12, backgroundColor: colors.primary,
+  },
+  addButtonText: { color: colors.surface, fontSize: 15, fontWeight: '800' },
   filtersToggle: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    minHeight: 44, marginBottom: 10, paddingHorizontal: 12,
-    borderRadius: 10, borderWidth: 1, borderColor: colors.border,
+    width: 48, minHeight: 48, alignItems: 'center', justifyContent: 'center',
+    borderRadius: 12, borderWidth: 1, borderColor: colors.border,
     backgroundColor: colors.surface,
   },
+  filtersToggleOpen: { backgroundColor: colors.softGreen, borderColor: colors.secondary },
+  filterIcon: { width: 22, height: 22, alignItems: 'center', justifyContent: 'center' },
+  filterFunnel: {
+    width: 20, height: 0, borderLeftWidth: 8, borderRightWidth: 8, borderTopWidth: 10,
+    borderLeftColor: 'transparent', borderRightColor: 'transparent', borderTopColor: colors.secondary,
+  },
+  filterStem: { width: 4, height: 7, backgroundColor: colors.secondary, borderBottomLeftRadius: 1, borderBottomRightRadius: 1 },
+  filterBadge: {
+    position: 'absolute', top: 2, right: 2, minWidth: 16, height: 16, borderRadius: 8,
+    backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 3,
+  },
+  filterBadgeText: { color: colors.surface, fontSize: 10, fontWeight: '800' },
   search: {
     backgroundColor: colors.surface,
     borderWidth: 1,

@@ -54,7 +54,7 @@ export const NewRestaurantScreen = ({ navigation, route }: NewRestaurantScreenPr
         navigation.goBack();
       } else {
         await addRestaurant({ ...form, name: form.name.trim(), rating: form.visited ? form.rating : '' });
-        navigation.replace('RestaurantList');
+        navigation.popTo('RestaurantList');
       }
     } catch {
       Alert.alert('No se pudo guardar', 'Los cambios no se han guardado. Inténtalo de nuevo.');

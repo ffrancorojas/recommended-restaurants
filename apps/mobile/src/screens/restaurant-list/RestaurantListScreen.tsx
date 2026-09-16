@@ -13,7 +13,7 @@ export const RestaurantListScreen = ({ navigation }: RestaurantListScreenProps) 
   const { restaurants, removeRestaurant, restaurantTypes, typesError, reloadTypes } = useRestaurants();
   const [filters, setFilters] = useState<RestaurantFilters>(initialFilters);
   const [typesOpen, setTypesOpen] = useState(false);
-  const [filtersVisible, setFiltersVisible] = useState(true);
+  const [filtersVisible, setFiltersVisible] = useState(false);
   const activeFilterCount = [filters.query, filters.locality, filters.price].filter(Boolean).length
     + (filters.types.length ? 1 : 0) + (filters.visitedOnly ? 1 : 0);
   const matchingRestaurants = useMemo(
@@ -54,21 +54,36 @@ export const RestaurantListScreen = ({ navigation }: RestaurantListScreenProps) 
     <SafeAreaView style={styles.safe}>
       <Header title="Mi listado" onBack={() => navigation.goBack()} />
       <View style={styles.page}>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityState={{ expanded: filtersVisible }}
-          style={styles.filtersToggle}
-          onPress={() => {
-            Keyboard.dismiss();
-            setFiltersVisible((visible) => !visible);
-          }}
-        >
-          <AppText
-            style={styles.dropdownLabel}
-            text={`${filtersVisible ? 'Ocultar filtros' : 'Mostrar filtros'}${activeFilterCount ? ` (${activeFilterCount} activos)` : ''}`}
-          />
-          <AppText style={styles.dropdownLabel} text={filtersVisible ? '▴' : '▾'} />
-        </Pressable>
+        <View style={styles.actions}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Añadir una entrada"
+            style={styles.addButton}
+            onPress={() => navigation.navigate('NewRestaurant')}
+          >
+            <AppText style={styles.addButtonText} text="＋ Nueva entrada" />
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={`${filtersVisible ? 'Ocultar filtros' : 'Mostrar filtros'}${activeFilterCount ? `, ${activeFilterCount} activos` : ''}`}
+            accessibilityState={{ expanded: filtersVisible }}
+            style={[styles.filtersToggle, filtersVisible && styles.filtersToggleOpen]}
+            onPress={() => {
+              Keyboard.dismiss();
+              setFiltersVisible((visible) => !visible);
+            }}
+          >
+            <View accessible={false} pointerEvents="none" style={styles.filterIcon}>
+              <View style={styles.filterFunnel} />
+              <View style={styles.filterStem} />
+            </View>
+            {activeFilterCount ? (
+              <View style={styles.filterBadge}>
+                <AppText style={styles.filterBadgeText} text={String(activeFilterCount)} />
+              </View>
+            ) : null}
+          </Pressable>
+        </View>
         {filtersVisible ? (
           <View>
             <View style={styles.dropdownTrigger}>
@@ -169,7 +184,7 @@ export const RestaurantListScreen = ({ navigation }: RestaurantListScreenProps) 
               <AppText style={styles.emptyTitle} text="Aún no hay resultados" />
               <AppText
                 style={styles.emptyText}
-                text={restaurants.length ? 'Prueba a cambiar o limpiar los filtros.' : 'Añade tu primera recomendación desde Inicio.'}
+                text={restaurants.length ? 'Prueba a cambiar o limpiar los filtros.' : 'Pulsa «Nueva entrada» para añadir tu primera recomendación.'}
               />
             </View>
           }
