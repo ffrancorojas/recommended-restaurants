@@ -26,7 +26,11 @@ export const RestaurantCard = ({ restaurant, onDelete, onEdit, onVisit }: Restau
   };
 
   return (
-    <View style={styles.card}>
+    <Pressable
+      style={styles.card}
+      accessible={false}
+      onPress={() => setExpanded((previous) => !previous)}
+    >
       <View style={styles.top}>
         <View style={styles.nameArea}>
           <AppText style={styles.title} text={restaurant.name} />
@@ -36,7 +40,7 @@ export const RestaurantCard = ({ restaurant, onDelete, onEdit, onVisit }: Restau
           accessibilityLabel={`Editar ${restaurant.name}`}
           style={styles.iconButton}
           hitSlop={4}
-          onPress={onEdit}
+          onPress={(event) => { event.stopPropagation(); onEdit(); }}
         >
           <AppText style={styles.edit} text="✎" />
         </Pressable>
@@ -45,7 +49,7 @@ export const RestaurantCard = ({ restaurant, onDelete, onEdit, onVisit }: Restau
           accessibilityLabel={`Buscar ${restaurant.name} en Google Maps`}
           style={[styles.iconButton, styles.mapsIcon]}
           hitSlop={4}
-          onPress={() => openSearch('maps')}
+          onPress={(event) => { event.stopPropagation(); void openSearch('maps'); }}
         >
           <AppText style={styles.mapsSymbol} text="⌖" />
         </Pressable>
@@ -54,7 +58,7 @@ export const RestaurantCard = ({ restaurant, onDelete, onEdit, onVisit }: Restau
           accessibilityLabel={`Buscar ${restaurant.name} en Google`}
           style={[styles.iconButton, styles.googleIcon]}
           hitSlop={4}
-          onPress={() => openSearch('google')}
+          onPress={(event) => { event.stopPropagation(); void openSearch('google'); }}
         >
           <AppText style={styles.googleSymbol} text="G" />
         </Pressable>
@@ -64,7 +68,7 @@ export const RestaurantCard = ({ restaurant, onDelete, onEdit, onVisit }: Restau
           accessibilityState={{ expanded }}
           style={styles.iconButton}
           hitSlop={4}
-          onPress={() => setExpanded((previous) => !previous)}
+          onPress={(event) => { event.stopPropagation(); setExpanded((previous) => !previous); }}
         >
           <View style={[styles.chevron, expanded && styles.chevronExpanded]} />
         </Pressable>
@@ -87,7 +91,7 @@ export const RestaurantCard = ({ restaurant, onDelete, onEdit, onVisit }: Restau
             {rating ? <RatingFace rating={rating.value} size={32} /> : null}
           </View>
         ) : (
-          <Pressable accessibilityRole="button" accessibilityLabel={`Marcar ${restaurant.name} como visitado`} style={styles.visitButton} hitSlop={{ top: 4, bottom: 8 }} onPress={onVisit}>
+          <Pressable accessibilityRole="button" accessibilityLabel={`Marcar ${restaurant.name} como visitado`} style={styles.visitButton} hitSlop={{ top: 4, bottom: 8 }} onPress={(event) => { event.stopPropagation(); onVisit(); }}>
             <AppText style={styles.visitedSymbol} text="Registrar visita" />
           </Pressable>
         )}
@@ -102,13 +106,13 @@ export const RestaurantCard = ({ restaurant, onDelete, onEdit, onVisit }: Restau
             accessibilityRole="button"
             accessibilityLabel={`Eliminar ${restaurant.name}`}
             style={styles.deleteButton}
-            onPress={onDelete}
+            onPress={(event) => { event.stopPropagation(); onDelete(); }}
           >
             <AppText style={styles.delete} text="Eliminar" />
           </Pressable>
         </View>
       ) : null}
-    </View>
+    </Pressable>
   );
 };
 const Info = ({ label, text }: InFoParams) => {

@@ -39,6 +39,8 @@ export const styles = StyleSheet.create({
     marginBottom: 10,
   },
   filters: { flexDirection: 'row', gap: 8, paddingBottom: 10 },
+  priceTrigger: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 6 },
+  priceOptionSelected: { backgroundColor: colors.softGreen },
   mini: {
     flex: 1,
     height: 38,
