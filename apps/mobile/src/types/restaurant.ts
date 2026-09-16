@@ -20,4 +20,5 @@ export const EMPTY_RESTAURANT_FORM: RestaurantFormData = {
   recommendedBy: '',
   visited: false,
   opinion: '',
+  rating: '',
 };

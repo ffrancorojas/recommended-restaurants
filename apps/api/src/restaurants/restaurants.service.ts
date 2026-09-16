@@ -4,14 +4,14 @@ import type { Restaurant, RestaurantFormData, RestaurantPage } from '@restaurant
 import { DATABASE } from '../database/database.module';
 import { CreateRestaurantDto, ListRestaurantsDto, UpdateRestaurantDto } from './restaurant.dto';
 
-const columns = `id, name, locality, dishes, price, type, notes, visited, opinion,
+const columns = `id, name, locality, dishes, price, type, notes, visited, opinion, rating,
   recommended_by AS "recommendedBy", created_at AS "createdAt"`;
 type RestaurantRow = Omit<Restaurant, 'createdAt'> & { createdAt: Date };
 const serialize = (row: RestaurantRow): Restaurant => ({ ...row, createdAt: row.createdAt.toISOString() });
 const fields: Record<keyof RestaurantFormData, string> = {
   name: 'name', locality: 'locality', dishes: 'dishes', price: 'price',
   type: 'type', notes: 'notes', recommendedBy: 'recommended_by',
-  visited: 'visited', opinion: 'opinion',
+  visited: 'visited', opinion: 'opinion', rating: 'rating',
 };
 const pattern = (text: string) => `%${text.replace(/[\\%_]/g, '\\$&')}%`;
 
@@ -43,9 +43,9 @@ export class RestaurantsService {
 
   async create(userId: string, data: CreateRestaurantDto): Promise<Restaurant> {
     const result = await this.db.query<RestaurantRow>(
-      `INSERT INTO restaurants (user_id, name, locality, dishes, price, type, notes, recommended_by, visited, opinion)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING ${columns}`,
-      [userId, data.name, data.locality, data.dishes, data.price, data.type, data.notes, data.recommendedBy, data.visited, data.opinion],
+      `INSERT INTO restaurants (user_id, name, locality, dishes, price, type, notes, recommended_by, visited, opinion, rating)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING ${columns}`,
+      [userId, data.name, data.locality, data.dishes, data.price, data.type, data.notes, data.recommendedBy, data.visited, data.opinion, data.rating],
     );
     return serialize(result.rows[0]);
   }

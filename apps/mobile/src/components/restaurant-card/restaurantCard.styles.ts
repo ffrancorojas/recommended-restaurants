@@ -2,6 +2,8 @@ import { colors } from '@/theme';
 import { StyleSheet } from 'react-native';
 
 export const styles = StyleSheet.create({
+  visitStatus: { flexDirection: 'row', alignItems: 'center', height: 32, gap: 8, flexShrink: 0 },
+  visitButton: { flexShrink: 0, height: 32, justifyContent: 'center', paddingHorizontal: 12, borderRadius: 8, backgroundColor: colors.softGreen },
   card: {
     backgroundColor: colors.surface,
     borderRadius: 16,
@@ -10,7 +12,7 @@ export const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#EEE6DE',
   },
-  top: { flexDirection: 'row', gap: 8, alignItems: 'center' },
+  top: { flexDirection: 'row', gap: 8, alignItems: 'flex-end' },
   nameArea: { flex: 1, minWidth: 0 },
   iconButton: {
     width: 28,
@@ -23,7 +25,6 @@ export const styles = StyleSheet.create({
   googleIcon: { backgroundColor: colors.softSand },
   mapsSymbol: { color: '#276559', fontSize: 20, fontWeight: '900' },
   googleSymbol: { color: '#4285F4', fontSize: 16, fontWeight: '900' },
-  visitedIcon: { width: 18, height: 18, borderRadius: 9, backgroundColor: colors.softGreen, alignItems: 'center', justifyContent: 'center' },
   visitedSymbol: { color: '#276559', fontSize: 12, fontWeight: '800' },
   chevron: {
     width: 10,
@@ -49,8 +50,9 @@ export const styles = StyleSheet.create({
   },
   edit: { color: '#276559', fontSize: 22, fontWeight: '700' },
   title: { fontSize: 17, fontWeight: '900', color: colors.text },
+  summaryRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, marginTop: 8 },
   metadata: {
-    flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 6, marginTop: 4,
+    flex: 1, minWidth: 0, minHeight: 32, flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 6,
   },
   locality: { color: colors.muted, fontSize: 12, flexShrink: 1 },
   price: { color: colors.text, fontSize: 12, fontWeight: '700', flexShrink: 1 },

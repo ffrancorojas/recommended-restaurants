@@ -83,7 +83,7 @@ test('migraciones repetibles, salud y documentación OpenAPI', async () => {
   assert.equal(result.status, 200);
   assert.deepEqual(result.body, { status: 'ok' });
   const migrations = await db.query('SELECT * FROM schema_migrations');
-  assert.equal(migrations.rowCount, 4);
+  assert.equal(migrations.rowCount, 6);
   const docs = await fetch(`${baseUrl}/api/docs-json`).then((response) => response.json());
   assert.ok(docs.paths['/api/v1/restaurants/{id}'].patch);
 });
@@ -177,13 +177,26 @@ test('visitas y opinión se guardan, se filtran y se validan', async () => {
   const path = `/restaurants/${restaurant.id}`;
   assert.equal((await request(path, { token })).body.visited, false);
   assert.equal((await request('/restaurants?visitedOnly=true', { token })).body.items.length, 0);
-  const updated = await request(path, { method: 'PATCH', token, body: { visited: true, opinion: 'Volvería por las croquetas' } });
+  const updated = await request(path, { method: 'PATCH', token, body: { visited: true, opinion: 'Volvería por las croquetas', rating: 'liked' } });
   assert.equal(updated.status, 200);
   assert.equal(updated.body.visited, true);
+  assert.equal(updated.body.rating, 'liked');
+  assert.equal((await request(path, { token })).body.rating, 'liked');
+  assert.equal(updated.body.name, 'Nombre nuevo');
+  const disliked = await request(path, { method: 'PATCH', token, body: { rating: 'disliked' } });
+  assert.equal(disliked.body.rating, 'disliked');
+  assert.equal(disliked.body.opinion, 'Volvería por las croquetas');
+  for (const rating of ['loved', 'neutral', 'disappointed']) {
+    const rated = await request(path, { method: 'PATCH', token, body: { rating } });
+    assert.equal(rated.status, 200);
+    assert.equal((await request(path, { token })).body.rating, rating);
+    assert.equal(rated.body.visited, true);
+    assert.equal(rated.body.opinion, 'Volvería por las croquetas');
+  }
   assert.equal(updated.body.opinion, 'Volvería por las croquetas');
   assert.equal((await request('/restaurants?visitedOnly=true&types=Tapas&locality=madrid', { token })).body.items.length, 1);
   assert.equal((await request('/restaurants?visitedOnly=true', { token: other.accessToken })).body.items.length, 0);
-  for (const body of [{ visited: 'false' }, { visited: null }, { opinion: null }, { opinion: 'x'.repeat(4001) }]) {
+  for (const body of [{ rating: null }, { rating: 'invalid' }, { visited: 'false' }, { visited: null }, { opinion: null }, { opinion: 'x'.repeat(4001) }]) {
     assert.equal((await request(path, { method: 'PATCH', token, body })).status, 400);
   }
   assert.equal((await request('/restaurants?visitedOnly=invalid', { token })).status, 400);

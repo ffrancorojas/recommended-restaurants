@@ -5,6 +5,16 @@ export const RESTAURANT_TYPES = [
 
 export type RestaurantType = (typeof RESTAURANT_TYPES)[number] | '';
 
+export const RESTAURANT_RATINGS = [
+  { value: 'loved', emoji: '😍', label: 'Me encantó' },
+  { value: 'liked', emoji: '😊', label: 'Me gustó' },
+  { value: 'neutral', emoji: '😐', label: 'Normal' },
+  { value: 'disliked', emoji: '🙁', label: 'No me gustó' },
+  { value: 'disappointed', emoji: '😞', label: 'Me decepcionó' },
+] as const;
+export type RestaurantRating = (typeof RESTAURANT_RATINGS)[number]['value'] | '';
+export const RESTAURANT_RATING_VALUES = ['', ...RESTAURANT_RATINGS.map((option) => option.value)];
+
 export type RestaurantFormData = {
   name: string;
   locality: string;
@@ -15,6 +25,7 @@ export type RestaurantFormData = {
   recommendedBy: string;
   visited: boolean;
   opinion: string;
+  rating: RestaurantRating;
 };
 
 // PostgreSQL genera un BIGINT consecutivo; se transporta como texto para no perder precisión en JavaScript.

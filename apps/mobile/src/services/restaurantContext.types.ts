@@ -7,6 +7,6 @@ export type RestaurantContextValue = {
   typesError: string | null;
   reloadTypes: () => Promise<void>;
   addRestaurant: (data: RestaurantFormData) => Promise<void>;
-  editRestaurant: (id: string, data: RestaurantFormData) => Promise<void>;
+  editRestaurant: (id: string, data: Partial<RestaurantFormData>) => Promise<void>;
   removeRestaurant: (id: string) => Promise<void>;
 };

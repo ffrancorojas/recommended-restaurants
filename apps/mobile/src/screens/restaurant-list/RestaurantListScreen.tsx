@@ -160,6 +160,7 @@ export const RestaurantListScreen = ({ navigation }: RestaurantListScreenProps) 
               restaurant={item}
               onDelete={() => confirmDelete(item.id)}
               onEdit={() => navigation.navigate('NewRestaurant', { restaurantId: item.id })}
+              onVisit={() => navigation.navigate('NewRestaurant', { restaurantId: item.id, mode: 'visit' })}
             />
           )}
           contentContainerStyle={styles.list}

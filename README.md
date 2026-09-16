@@ -165,3 +165,11 @@ El token aleatorio se almacena únicamente como hash, caduca en 24 horas y se co
 Los iconos de Google y Google Maps de la app siguen abriendo búsquedas sin clave de API.
 
 Referencias: [NestJS](https://docs.nestjs.com/), [monorepos Expo](https://docs.expo.dev/guides/monorepos/), [consultas parametrizadas con pg](https://node-postgres.com/features/queries).
+
+## Registrar una visita
+
+En cada tarjeta pendiente, «Registrar visita» abre la edición y desplaza el formulario a «Mi opinión». En este modo los datos del restaurante están deshabilitados; se permite escribir la experiencia y elegir 😍 «Me encantó», 😊 «Me gustó», 😐 «Normal», 🙁 «No me gustó» o 😞 «Me decepcionó». «Guardar visita» confirma los cambios; volver sin guardar conserva el estado anterior. La tarjeta plegada muestra un marcador de ubicación con confirmación integrada y la valoración, sin texto de estado. El lápiz mantiene la edición completa.
+
+La valoración se conserva en la demo local y en la API. Los registros antiguos empiezan sin valoración. Antes de arrancar la API actualizada, ejecuta `npm run db:migrate` para aplicar `005_restaurant_rating.sql` y `006_restaurant_rating_options.sql`.
+
+Las valoraciones se representan con caritas propias de colores: verde intenso, verde claro, amarillo, naranja y rojo, de mejor a peor experiencia. Las expresiones y las etiquetas distinguen las opciones también sin depender del color.

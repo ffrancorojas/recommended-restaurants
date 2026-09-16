@@ -1,7 +1,7 @@
 import { Transform, Type } from 'class-transformer';
 import { IsArray, IsBoolean, IsIn, IsInt, IsString, Max, MaxLength, Min, MinLength } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
-import { RESTAURANT_TYPES } from '@restaurantes/contracts';
+import { RESTAURANT_TYPES, RESTAURANT_RATING_VALUES } from '@restaurantes/contracts';
 import type { RestaurantFormData, RestaurantType } from '@restaurantes/contracts';
 
 const trim = ({ value }: { value: unknown }) => typeof value === 'string' ? value.trim() : value;
@@ -57,6 +57,10 @@ export class CreateRestaurantDto implements RestaurantFormData {
   @IsString()
   @MaxLength(4000)
   opinion = '';
+
+  @ApiPropertyOptional({ enum: RESTAURANT_RATING_VALUES, default: '' })
+  @IsIn(RESTAURANT_RATING_VALUES)
+  rating: RestaurantFormData['rating'] = '';
 }
 
 // Elimina valores iniciales heredados: PATCH solo cambia los campos enviados.

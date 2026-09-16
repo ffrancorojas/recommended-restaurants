@@ -2,7 +2,15 @@ import { colors } from '@/theme';
 import { StyleSheet } from 'react-native';
 
 export const styles = StyleSheet.create({
+  disabled: { opacity: 0.5 },
+  ratingOption: { minHeight: 52, flexDirection: 'row', alignItems: 'center', gap: 8 },
   field: { marginBottom: 18 },
+  visitRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  visitButton: {
+    alignSelf: 'flex-start', minHeight: 44, justifyContent: 'center',
+    paddingHorizontal: 12, borderRadius: 8, backgroundColor: colors.softGreen,
+  },
+  visitButtonText: { color: '#276559', fontSize: 13, fontWeight: '800' },
   label: { fontWeight: '800', color: '#3D3733', marginBottom: 8 },
   nameRow: { flexDirection: 'row', gap: 8, alignItems: 'center' },
   input: {

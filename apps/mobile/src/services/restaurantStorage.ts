@@ -45,6 +45,7 @@ export async function loadRestaurants(): Promise<Restaurant[]> {
         recommendedBy: restaurant.recommendedBy ?? '',
         visited: restaurant.visited ?? false,
         opinion: restaurant.opinion ?? '',
+        rating: restaurant.rating ?? '',
       }));
 }
 export async function saveRestaurants(restaurants: Restaurant[]): Promise<void> {

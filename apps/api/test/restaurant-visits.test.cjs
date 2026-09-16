@@ -9,9 +9,11 @@ test('restaurantes nuevos empiezan sin visita ni opinión; PATCH conserva campos
   const created = plainToInstance(CreateRestaurantDto, { name: 'Prueba' });
   assert.equal(created.visited, false);
   assert.equal(created.opinion, '');
+  assert.equal(created.rating, '');
   assert.deepEqual(await validate(created), []);
   const patch = plainToInstance(UpdateRestaurantDto, { opinion: ' Buena comida ' });
   assert.equal(patch.visited, undefined);
+  assert.equal(patch.rating, undefined);
   assert.equal(patch.opinion, 'Buena comida');
   assert.deepEqual(await validate(patch), []);
 });
@@ -31,4 +33,14 @@ test('visita exige booleano real y opinión admite hasta 4000 caracteres', async
     assert.ok((await validate(plainToInstance(UpdateRestaurantDto, body))).length);
   }
   assert.deepEqual(await validate(plainToInstance(UpdateRestaurantDto, { visited: true, opinion: 'x'.repeat(4000) })), []);
+});
+
+
+test('valoración admite las cinco respuestas o vacío para registros antiguos', async () => {
+  for (const rating of ['', 'loved', 'liked', 'neutral', 'disliked', 'disappointed']) {
+    assert.deepEqual(await validate(plainToInstance(UpdateRestaurantDto, { rating })), []);
+  }
+  for (const rating of [null, true, '😊', 'invalid']) {
+    assert.ok((await validate(plainToInstance(UpdateRestaurantDto, { rating }))).length);
+  }
 });

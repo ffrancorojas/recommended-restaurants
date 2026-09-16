@@ -67,7 +67,7 @@ export const RestaurantProvider = ({ children, session }: PropsWithChildren<{ se
     }
     await updateRestaurants(restaurants.filter((restaurant) => restaurant.id !== id));
   };
-  const editRestaurant = async (id: string, data: RestaurantFormData) => {
+  const editRestaurant = async (id: string, data: Partial<RestaurantFormData>) => {
     if (session) {
       const updated = await authenticatedRequest<Restaurant>(session.accessToken, `/restaurants/${id}`, 'PATCH', data);
       setRestaurants((current) => current.map((restaurant) => restaurant.id === id ? updated : restaurant));
