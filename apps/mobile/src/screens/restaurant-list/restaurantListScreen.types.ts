@@ -1,5 +1,5 @@
-import { RootStackParamList } from '@/types';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import type { RootStackParamList } from '@/types';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 export type RestaurantListScreenProps = NativeStackScreenProps<
   RootStackParamList,

@@ -1,1 +1,1 @@
-export { Header, NewRestaurantScreen } from './NewRestaurantScreen';
+export { NewRestaurantScreen } from './NewRestaurantScreen';

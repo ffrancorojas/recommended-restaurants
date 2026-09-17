@@ -1,9 +1,8 @@
-import { AppText, RestaurantForm } from '@/components';
+import { RestaurantForm, ScreenLayout } from '@/components';
 import { useRestaurants } from '@/services';
 import { EMPTY_RESTAURANT_FORM, RestaurantFormData } from '@/types';
 import { useEffect, useRef, useState } from 'react';
-import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Alert, ScrollView } from 'react-native';
 import { styles } from './newRestaurantScreen.styles';
 import { NewRestaurantScreenProps } from './newRestaurantScreen.types';
 
@@ -63,31 +62,20 @@ export const NewRestaurantScreen = ({ navigation, route }: NewRestaurantScreenPr
     }
   };
   return (
-    <KeyboardAvoidingView
-      style={styles.keyboard}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    <ScreenLayout
+      title={visitOnly ? 'Valorar visita' : restaurantId ? 'Editar restaurante' : 'Nueva entrada'}
+      backLabel={restaurantId ? 'Volver' : 'Inicio'}
+      onBack={() => navigation.goBack()}
+      avoidKeyboard
     >
-      <SafeAreaView style={styles.safe}>
-        <Header title={visitOnly ? 'Valorar visita' : restaurantId ? 'Editar restaurante' : 'Nueva entrada'} backLabel={restaurantId ? 'Volver' : 'Inicio'} onBack={() => navigation.goBack()} />
-        <ScrollView ref={scroll} contentContainerStyle={styles.form} keyboardShouldPersistTaps="handled"
-          onLayout={(event) => setViewportHeight(event.nativeEvent.layout.height)}
-          onContentSizeChange={(_, height) => setContentHeight(height)}>
-          <RestaurantForm value={form} onChange={update} onSave={save} visitOnly={visitOnly}
-            opinionMinHeight={visitOnly ? Math.max(0, viewportHeight - 40) : undefined}
-            onOpinionLayout={setOpinionY} />
-        </ScrollView>
-      </SafeAreaView>
-    </KeyboardAvoidingView>
+      <ScrollView ref={scroll} contentContainerStyle={styles.form} keyboardShouldPersistTaps="handled"
+        onLayout={(event) => setViewportHeight(event.nativeEvent.layout.height)}
+        onContentSizeChange={(_, height) => setContentHeight(height)}>
+        <RestaurantForm value={form} onChange={update} onSave={save} visitOnly={visitOnly}
+          opinionMinHeight={visitOnly ? Math.max(0, viewportHeight - 40) : undefined}
+          onOpinionLayout={setOpinionY}
+          legacyPrice={restaurants.find((item) => item.id === restaurantId)?.legacyPrice} />
+      </ScrollView>
+    </ScreenLayout>
   );
 };
-export function Header({ title, onBack, backLabel = 'Inicio' }: { title: string; onBack: () => void; backLabel?: string }) {
-  return (
-    <View style={styles.header}>
-      <Pressable onPress={onBack} hitSlop={12}>
-        <AppText style={styles.back} text={`‹ ${backLabel}`} />
-      </Pressable>
-      <AppText style={styles.headerTitle} text={title} />
-      <View style={styles.spacer} />
-    </View>
-  );
-}
