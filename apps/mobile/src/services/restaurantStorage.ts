@@ -1,4 +1,5 @@
 import { Restaurant } from '@/types';
+import { normalizeRestaurantPrice, normalizeRestaurantTypes } from '@restaurantes/contracts';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const STORAGE_KEY = '@restaurantes-recomendados/v1';
@@ -41,7 +42,8 @@ export function allocateRestaurantId(): Promise<string> {
 export async function loadRestaurants(): Promise<Restaurant[]> {
   const store = await readStore();
   return store.items.map((restaurant) => ({
-        ...restaurant,
+        ...normalizeRestaurantPrice(restaurant),
+        type: normalizeRestaurantTypes(restaurant.type),
         recommendedBy: restaurant.recommendedBy ?? '',
         visited: restaurant.visited ?? false,
         opinion: restaurant.opinion ?? '',

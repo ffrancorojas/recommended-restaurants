@@ -1,4 +1,5 @@
 export { RootStackParamList } from './navigation';
+export type { PriceRange } from './priceRange';
 export type {
   Restaurant,
   RestaurantFilters,

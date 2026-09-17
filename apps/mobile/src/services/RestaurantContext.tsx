@@ -5,7 +5,7 @@ import { loadRestaurantTypes } from './restaurantTypes';
 import { RestaurantContextValue } from './restaurantContext.types';
 import { authenticatedRequest } from './authApi';
 import type { AuthSession, RestaurantPage } from '@restaurantes/contracts';
-import { RESTAURANT_TYPES } from '@restaurantes/contracts';
+import { normalizeRestaurantPrice, normalizeRestaurantTypes, RESTAURANT_TYPES } from '@restaurantes/contracts';
 import { Alert } from 'react-native';
 
 const RestaurantContext = createContext<RestaurantContextValue | undefined>(undefined);
@@ -39,7 +39,7 @@ export const RestaurantProvider = ({ children, session }: PropsWithChildren<{ se
       }
     };
     load()
-      .then(setRestaurants)
+      .then((items) => setRestaurants(items.map((item) => ({ ...normalizeRestaurantPrice(item), type: normalizeRestaurantTypes(item.type) }))))
       .catch(() => Alert.alert('No se pudo cargar el listado', 'Comprueba la conexión y vuelve a iniciar sesión.'))
       .finally(() => setIsLoading(false));
   }, []);
