@@ -3,7 +3,13 @@ export const RESTAURANT_TYPES = [
   'Mexicano', 'Tapas', 'Vegetariano', 'Mediterráneo', 'Japonés', 'Chino', 'Turco', 'Otro',
 ] as const;
 
-export type RestaurantType = (typeof RESTAURANT_TYPES)[number] | '';
+export type RestaurantType = (typeof RESTAURANT_TYPES)[number];
+
+// Convert previously saved single selections to the current array format.
+export function normalizeRestaurantTypes(value: unknown): RestaurantType[] {
+  const values = Array.isArray(value) ? value : typeof value === 'string' && value ? [value] : [];
+  return [...new Set(values.filter((item): item is RestaurantType => RESTAURANT_TYPES.includes(item)))];
+}
 
 export const RESTAURANT_RATINGS = [
   { value: 'loved', emoji: '😍', label: 'Me encantó' },
@@ -15,12 +21,33 @@ export const RESTAURANT_RATINGS = [
 export type RestaurantRating = (typeof RESTAURANT_RATINGS)[number]['value'] | '';
 export const RESTAURANT_RATING_VALUES = ['', ...RESTAURANT_RATINGS.map((option) => option.value)];
 
+export const PRICE_RANGES = [
+  { value: 'under20', label: 'Menos de 20 €' },
+  { value: '20to40', label: '20–40 €' },
+  { value: '40to60', label: '40–60 €' },
+  { value: '60to80', label: '60–80 €' },
+  { value: '80to100', label: '80–100 €' },
+  { value: 'over100', label: 'Más de 100 €' },
+] as const;
+export type PriceRange = '' | (typeof PRICE_RANGES)[number]['value'];
+export const PRICE_RANGE_VALUES = ['', ...PRICE_RANGES.map((range) => range.value)];
+
+// Preserve old free-text prices as a reference until a range is selected.
+export function normalizeRestaurantPrice<T extends { price: string; legacyPrice?: string }>(restaurant: T) {
+  const valid = PRICE_RANGE_VALUES.includes(restaurant.price);
+  return {
+    ...restaurant,
+    price: (valid ? restaurant.price : '') as PriceRange,
+    legacyPrice: valid ? restaurant.legacyPrice ?? '' : restaurant.price,
+  };
+}
+
 export type RestaurantFormData = {
   name: string;
   locality: string;
   dishes: string;
-  price: string;
-  type: RestaurantType;
+  price: PriceRange;
+  type: RestaurantType[];
   notes: string;
   recommendedBy: string;
   visited: boolean;
@@ -29,7 +56,7 @@ export type RestaurantFormData = {
 };
 
 // PostgreSQL genera un BIGINT consecutivo; se transporta como texto para no perder precisión en JavaScript.
-export type Restaurant = RestaurantFormData & { id: string; createdAt: string };
+export type Restaurant = RestaurantFormData & { id: string; createdAt: string; legacyPrice?: string };
 export type User = { id: string; email: string; name: string; nick: string | null; createdAt: string };
 export type Registration = Credentials & { name: string; nick: string };
 export type Credentials = { email: string; password: string };
