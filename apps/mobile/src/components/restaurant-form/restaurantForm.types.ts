@@ -7,4 +7,5 @@ export type RestaurantFormProps = {
   visitOnly?: boolean;
   onOpinionLayout?: (y: number) => void;
   opinionMinHeight?: number;
+  legacyPrice?: string;
 };

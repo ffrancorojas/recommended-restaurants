@@ -7,8 +7,9 @@ import { useRestaurants } from '@/services';
 import { Alert, Linking, Pressable, TextInput, View } from 'react-native';
 import { styles } from './restaurantForm.styles';
 import { RestaurantFormProps } from './restaurantForm.types';
+import { PriceRangeSelect } from './components/price-range-select';
 
-export const RestaurantForm = ({ value, onChange, onSave, visitOnly = false, onOpinionLayout, opinionMinHeight }: RestaurantFormProps) => {
+export const RestaurantForm = ({ value, onChange, onSave, visitOnly = false, onOpinionLayout, opinionMinHeight, legacyPrice }: RestaurantFormProps) => {
   const { restaurantTypes, typesError, reloadTypes } = useRestaurants();
   const openSearch = async (service: 'maps' | 'google') => {
     if (!value.name.trim())
@@ -78,28 +79,30 @@ export const RestaurantForm = ({ value, onChange, onSave, visitOnly = false, onO
           onChangeText={(text) => onChange('dishes', text)}
           placeholder="Ej. croquetas, ramen..."
         />
-        <AppTextField
-          editable={!visitOnly}
-          accessibilityState={{ disabled: visitOnly }}
-          label="Estimación de precio"
-          value={value.price}
-          onChangeText={(text) => onChange('price', text)}
-          placeholder="Ej. 20–30 € por persona"
-        />
-        <AppText style={styles.label} text="Tipo de local" />
+        <View style={styles.field}>
+          <AppText style={styles.label} text="Estimación de precio" />
+          <PriceRangeSelect value={value.price} onChange={(price) => onChange('price', price)} disabled={visitOnly} />
+          {legacyPrice && !value.price ? <AppText style={styles.help} text={`Precio anterior: ${legacyPrice}. Selecciona un rango.`} /> : null}
+        </View>
+        <AppText style={styles.label} text="Tipos de local" />
+        <AppText style={styles.help} text="Puedes seleccionar varios tipos." />
         {typesError ? <Pressable disabled={visitOnly} accessibilityState={{ disabled: visitOnly }} accessibilityRole="button" onPress={reloadTypes}><AppText text={typesError} /></Pressable> : null}
         <View style={styles.chips}>
           {restaurantTypes.map((type) => (
             <Pressable
               disabled={visitOnly}
-              accessibilityState={{ disabled: visitOnly }}
+              accessibilityRole="checkbox"
+              accessibilityLabel={type}
+              accessibilityState={{ disabled: visitOnly, checked: value.type.includes(type) }}
               key={type}
-              onPress={() => onChange('type', value.type === type ? '' : type)}
-              style={[styles.chip, value.type === type && styles.chipSelected]}
+              onPress={() => onChange('type', value.type.includes(type)
+                ? value.type.filter((selected) => selected !== type)
+                : [...value.type, type])}
+              style={[styles.chip, value.type.includes(type) && styles.chipSelected]}
             >
               <AppText
-                style={[styles.chipText, value.type === type && styles.chipTextSelected]}
-                text={type}
+                style={[styles.chipText, value.type.includes(type) && styles.chipTextSelected]}
+                text={`${value.type.includes(type) ? '✓ ' : ''}${type}`}
               />
             </Pressable>
           ))}
