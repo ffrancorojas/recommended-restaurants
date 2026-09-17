@@ -4,7 +4,7 @@ import type { Restaurant, RestaurantFormData, RestaurantPage } from '@restaurant
 import { DATABASE } from '../database/database.module';
 import { CreateRestaurantDto, ListRestaurantsDto, UpdateRestaurantDto } from './restaurant.dto';
 
-const columns = `id, name, locality, dishes, price, type, notes, visited, opinion, rating,
+const columns = `id, name, locality, dishes, price, legacy_price AS "legacyPrice", type, notes, visited, opinion, rating,
   recommended_by AS "recommendedBy", created_at AS "createdAt"`;
 type RestaurantRow = Omit<Restaurant, 'createdAt'> & { createdAt: Date };
 const serialize = (row: RestaurantRow): Restaurant => ({ ...row, createdAt: row.createdAt.toISOString() });
@@ -23,11 +23,11 @@ export class RestaurantsService {
     const result = await this.db.query<RestaurantRow>(
       `SELECT ${columns} FROM restaurants WHERE user_id = $1
        AND concat_ws(' ', name, locality, dishes, notes, recommended_by) ILIKE $2
-       AND locality ILIKE $3 AND price ILIKE $4
-       AND (cardinality($5::text[]) = 0 OR type = ANY($5::text[]))
+       AND locality ILIKE $3 AND ($4 = '' OR price = $4)
+       AND (cardinality($5::text[]) = 0 OR type && $5::text[])
        AND (NOT $8::boolean OR visited)
        ORDER BY created_at DESC, id DESC LIMIT $6 OFFSET $7`,
-      [userId, pattern(filters.query), pattern(filters.locality), pattern(filters.price),
+      [userId, pattern(filters.query), pattern(filters.locality), filters.price,
         filters.types, filters.limit, filters.offset, filters.visitedOnly],
     );
     return { items: result.rows.map(serialize), limit: filters.limit, offset: filters.offset };
