@@ -173,3 +173,15 @@ En cada tarjeta pendiente, «Registrar visita» abre la edición y desplaza el f
 La valoración se conserva en la demo local y en la API. Los registros antiguos empiezan sin valoración. Antes de arrancar la API actualizada, ejecuta `npm run db:migrate` para aplicar `005_restaurant_rating.sql` y `006_restaurant_rating_options.sql`.
 
 Las valoraciones se representan con caritas propias de colores: verde intenso, verde claro, amarillo, naranja y rojo, de mejor a peor experiencia. Las expresiones y las etiquetas distinguen las opciones también sin depender del color.
+
+## Varios tipos de local
+
+El formulario permite marcar varios tipos de local y las tarjetas muestran todas las etiquetas seleccionadas. El filtro encuentra los restaurantes que tengan cualquiera de los tipos elegidos.
+
+El campo `type` se guarda como una lista; la API también acepta el texto de los clientes anteriores. Ejecuta `npm run db:migrate` antes de iniciar la API actualizada para aplicar `008_restaurant_multiple_types.sql`: convierte los tipos existentes en listas sin perder la selección y los campos vacíos en listas vacías. La demo local convierte sus registros al cargarlos.
+
+## Rangos de precio
+
+El formulario y el filtro ofrecen los mismos seis rangos de precio. `price` almacena la clave elegida (`under20`, `20to40`, `40to60`, `60to80`, `80to100` u `over100`), o `''` si no se especifica. El filtro compara la clave directamente.
+
+Aplica `009_restaurant_price_ranges.sql` con `npm run db:migrate` antes de arrancar la API. Los precios anteriores escritos a mano se conservan en `legacy_price` (y en `legacyPrice` en la demo), visibles en la tarjeta y como referencia en el formulario, hasta elegir un rango. Mientras no tengan rango aparecen en «Todos los precios».
