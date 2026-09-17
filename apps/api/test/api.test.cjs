@@ -83,7 +83,7 @@ test('migraciones repetibles, salud y documentación OpenAPI', async () => {
   assert.equal(result.status, 200);
   assert.deepEqual(result.body, { status: 'ok' });
   const migrations = await db.query('SELECT * FROM schema_migrations');
-  assert.equal(migrations.rowCount, 7);
+  assert.equal(migrations.rowCount, 9);
   const docs = await fetch(`${baseUrl}/api/docs-json`).then((response) => response.json());
   assert.ok(docs.paths['/api/v1/restaurants/{id}'].patch);
 });
@@ -120,7 +120,7 @@ test('login real, errores genéricos y rutas protegidas', async () => {
 });
 
 test('crear restaurante, validar entrada y rechazar propietario suministrado por el cliente', async () => {
-  const body = { name: ' Casa Prueba ', locality: 'Madrid', type: 'Tapas', price: '25 €', recommendedBy: 'Ana', notes: 'Terraza' };
+  const body = { name: ' Casa Prueba ', locality: 'Madrid', type: ['Tapas', 'Mediterráneo'], price: '20to40', recommendedBy: 'Ana', notes: 'Terraza' };
   const created = await request('/restaurants', { method: 'POST', token: owner.accessToken, body });
   assert.equal(created.status, 201);
   restaurant = created.body;
@@ -128,6 +128,8 @@ test('crear restaurante, validar entrada y rechazar propietario suministrado por
   assert.equal(restaurant.name, 'Casa Prueba');
   assert.equal(restaurant.dishes, '');
   assert.equal(restaurant.recommendedBy, 'Ana');
+  assert.equal(restaurant.price, '20to40');
+  assert.deepEqual(restaurant.type, ['Tapas', 'Mediterráneo']);
   assert.equal('user_id' in restaurant, false);
   for (const invalid of [{ name: ' ' }, { name: 'X', type: 'invalid' }, { name: 'X', notes: null }, { ...body, userId: other.user.id }]) {
     assert.equal((await request('/restaurants', { method: 'POST', token: owner.accessToken, body: invalid })).status, 400);
@@ -150,7 +152,10 @@ test('filtros por recomendador, tipos múltiples y paginación con límites', as
   const token = owner.accessToken;
   assert.equal((await request('/restaurants?query=ana&types=Tapas&types=Sushi', { token })).body.items.length, 1);
   assert.equal((await request('/restaurants?types=Sushi', { token })).body.items.length, 0);
-  assert.equal((await request('/restaurants?locality=madrid&price=25', { token })).body.items.length, 1);
+  assert.equal((await request('/restaurants?types=Mediterr%C3%A1neo', { token })).body.items.length, 1);
+  assert.equal((await request('/restaurants?locality=madrid&price=20to40', { token })).body.items.length, 1);
+  assert.equal((await request('/restaurants?price=40to60', { token })).body.items.length, 0);
+  assert.equal((await request('/restaurants?price=25', { token })).status, 400);
   assert.equal((await request('/restaurants?query=%25', { token })).body.items.length, 0);
   assert.equal((await request('/restaurants?query=%27%20OR%201%3D1--', { token })).body.items.length, 0);
   assert.equal((await request('/restaurants?limit=1&offset=1', { token })).body.items.length, 0);
@@ -159,17 +164,96 @@ test('filtros por recomendador, tipos múltiples y paginación con límites', as
   }
 });
 
+test('rangos de precio se guardan, se filtran por igualdad y se pueden quitar', async () => {
+  const token = owner.accessToken;
+  const path = `/restaurants/${restaurant.id}`;
+  for (const price of ['under20', '20to40', '40to60', '60to80', '80to100', 'over100']) {
+    const updated = await request(path, { method: 'PATCH', token, body: { price } });
+    assert.equal(updated.status, 200);
+    assert.equal((await request(path, { token })).body.price, price);
+    assert.equal((await request(`/restaurants?price=${price}`, { token })).body.items.length, 1);
+    const different = price === 'under20' ? 'over100' : 'under20';
+    assert.equal((await request(`/restaurants?price=${different}`, { token })).body.items.length, 0);
+  }
+  assert.equal((await request(path, { method: 'PATCH', token, body: { price: '25 €' } })).status, 400);
+  assert.equal((await request(path, { method: 'PATCH', token, body: { price: '' } })).body.price, '');
+  assert.equal((await request('/restaurants', { token })).body.items.length, 1);
+  await request(path, { method: 'PATCH', token, body: { price: '20to40' } });
+});
+
+test('migración de precios conserva texto antiguo y rangos ya elegidos', async () => {
+  const { readFile } = require('node:fs/promises');
+  const { join } = require('node:path');
+  const client = await db.connect();
+  try {
+    await client.query('BEGIN');
+    await client.query("CREATE TEMP TABLE restaurants (id integer, price varchar(80) NOT NULL DEFAULT '') ON COMMIT DROP");
+    await client.query("INSERT INTO restaurants VALUES (1, '25 €'), (2, ''), (3, '20to40')");
+    await client.query(await readFile(join(__dirname, '../migrations/009_restaurant_price_ranges.sql'), 'utf8'));
+    assert.deepEqual((await client.query('SELECT price, legacy_price FROM restaurants ORDER BY id')).rows, [
+      { price: '', legacy_price: '25 €' }, { price: '', legacy_price: '' }, { price: '20to40', legacy_price: '' },
+    ]);
+    await assert.rejects(client.query("INSERT INTO restaurants VALUES (4, '25 €', '')"), { code: '23514' });
+  } finally {
+    await client.query('ROLLBACK');
+    client.release();
+  }
+});
+
 test('PATCH conserva campos omitidos y rechaza null e identificadores inválidos', async () => {
   const result = await request(`/restaurants/${restaurant.id}`, { method: 'PATCH', token: owner.accessToken, body: { name: 'Nombre nuevo' } });
   assert.equal(result.status, 200);
   assert.equal(result.body.name, 'Nombre nuevo');
   assert.equal(result.body.locality, 'Madrid');
-  assert.equal(result.body.type, 'Tapas');
+  assert.equal(result.body.price, '20to40');
+  assert.deepEqual(result.body.type, ['Tapas', 'Mediterráneo']);
   assert.equal(result.body.notes, 'Terraza');
   assert.equal(result.body.recommendedBy, 'Ana');
   const invalid = await request(`/restaurants/${restaurant.id}`, { method: 'PATCH', token: owner.accessToken, body: { notes: null } });
   assert.equal(invalid.status, 400);
   assert.equal((await request('/restaurants/not-a-uuid', { token: owner.accessToken })).status, 400);
+});
+
+test('tipos múltiples se actualizan, se vacían y se conservan cuando se omiten', async () => {
+  const token = owner.accessToken;
+  const path = `/restaurants/${restaurant.id}`;
+  const updated = await request(path, { method: 'PATCH', token, body: { type: ['Sushi', 'Japonés'] } });
+  assert.equal(updated.status, 200);
+  assert.deepEqual((await request(path, { token })).body.type, ['Sushi', 'Japonés']);
+  assert.equal((await request('/restaurants?types=Sushi', { token })).body.items.length, 1);
+  assert.equal((await request('/restaurants?types=Tapas', { token })).body.items.length, 0);
+  for (const type of [null, ['invalid'], ['Tapas', 'Tapas'], [null], ['']]) {
+    assert.equal((await request(path, { method: 'PATCH', token, body: { type } })).status, 400);
+  }
+  assert.deepEqual((await request(path, { method: 'PATCH', token, body: { type: [] } })).body.type, []);
+  assert.equal((await request('/restaurants?types=Sushi', { token })).body.items.length, 0);
+  assert.equal((await request('/restaurants', { token })).body.items.length, 1);
+  // Older clients sending one type are still accepted.
+  assert.deepEqual((await request(path, { method: 'PATCH', token, body: { type: 'Tapas' } })).body.type, ['Tapas']);
+  assert.deepEqual((await request(path, { method: 'PATCH', token, body: { opinion: '' } })).body.type, ['Tapas']);
+});
+
+test('migración de tipos conserva selecciones antiguas y campos vacíos', async () => {
+  const { readFile } = require('node:fs/promises');
+  const { join } = require('node:path');
+  const client = await db.connect();
+  try {
+    await client.query('BEGIN');
+    await client.query(`CREATE TEMP TABLE restaurants (
+      id integer, type varchar(40) NOT NULL DEFAULT '',
+      CONSTRAINT restaurants_type_check CHECK (type IN ('', 'Tapas'))
+    ) ON COMMIT DROP`);
+    await client.query("INSERT INTO restaurants (id, type) VALUES (1, 'Tapas'), (2, '')");
+    await client.query(await readFile(join(__dirname, '../migrations/008_restaurant_multiple_types.sql'), 'utf8'));
+    assert.deepEqual((await client.query('SELECT type FROM restaurants ORDER BY id')).rows, [{ type: ['Tapas'] }, { type: [] }]);
+    await client.query('INSERT INTO restaurants (id) VALUES (3)');
+    assert.deepEqual((await client.query('SELECT type FROM restaurants WHERE id = 3')).rows[0].type, []);
+    await client.query('UPDATE restaurants SET type = $1 WHERE id = 1', [['Tapas', 'Japonés']]);
+    assert.deepEqual((await client.query('SELECT type FROM restaurants WHERE id = 1')).rows[0].type, ['Tapas', 'Japonés']);
+  } finally {
+    await client.query('ROLLBACK');
+    client.release();
+  }
 });
 
 test('visitas y opinión se guardan, se filtran y se validan', async () => {
