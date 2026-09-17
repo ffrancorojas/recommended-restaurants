@@ -35,19 +35,6 @@ export const styles = StyleSheet.create({
     transform: [{ rotate: '45deg' }],
   },
   chevronExpanded: { transform: [{ rotate: '225deg' }] },
-  details: {
-    marginTop: 12,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: '#EEE6DE',
-  },
-  deleteButton: {
-    alignSelf: 'flex-end',
-    minHeight: 44,
-    justifyContent: 'center',
-    paddingHorizontal: 8,
-    marginTop: 8,
-  },
   edit: { color: '#276559', fontSize: 22, fontWeight: '700' },
   title: { fontSize: 17, fontWeight: '900', color: colors.text },
   summaryRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, marginTop: 8 },
@@ -56,7 +43,6 @@ export const styles = StyleSheet.create({
   },
   locality: { color: colors.muted, fontSize: 12, flexShrink: 1 },
   price: { color: colors.text, fontSize: 12, fontWeight: '700', flexShrink: 1 },
-  delete: { color: colors.danger, fontSize: 12, fontWeight: '700' },
   tag: {
     alignSelf: 'flex-start',
     backgroundColor: colors.softGreen,
@@ -68,13 +54,4 @@ export const styles = StyleSheet.create({
     borderRadius: 12,
     overflow: 'hidden',
   },
-  info: { marginBottom: 8 },
-  infoLabel: {
-    color: '#9A9088',
-    fontWeight: '800',
-    fontSize: 11,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  infoText: { color: '#49413B', marginTop: 2, lineHeight: 20 },
 });

@@ -6,7 +6,3 @@ export type RestaurantCardProps = {
   onEdit: () => void;
   onVisit: () => void;
 };
-export type InFoParams = {
-  label: string;
-  text: string;
-};
