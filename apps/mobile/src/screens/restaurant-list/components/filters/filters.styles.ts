@@ -1,0 +1,73 @@
+import { colors } from '@/theme';
+import { StyleSheet } from 'react-native';
+
+export const styles = StyleSheet.create({
+  search: {
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    height: 48,
+    borderRadius: 12,
+    paddingHorizontal: 13,
+    marginBottom: 10,
+  },
+  filters: { flexDirection: 'row', gap: 8, paddingBottom: 10 },
+  priceTrigger: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 6,
+  },
+  priceOptionSelected: { backgroundColor: colors.softGreen },
+  mini: {
+    flex: 1,
+    height: 38,
+    backgroundColor: colors.surface,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingHorizontal: 10,
+    fontSize: 13,
+  },
+  dropdownTrigger: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    minHeight: 44,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    marginBottom: 10,
+  },
+  dropdownLabel: { fontSize: 13, color: colors.text, flexShrink: 1 },
+  dropdown: {
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 10,
+    backgroundColor: colors.surface,
+    marginBottom: 10,
+    overflow: 'hidden',
+  },
+  options: { flexGrow: 0, maxHeight: 180 },
+  option: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    minHeight: 44,
+    paddingHorizontal: 12,
+  },
+  checkbox: {
+    width: 22,
+    height: 22,
+    borderRadius: 5,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  checkboxSelected: { backgroundColor: colors.secondary, borderColor: colors.secondary },
+  checkmark: { color: colors.surface, fontWeight: '800' },
+
+});
