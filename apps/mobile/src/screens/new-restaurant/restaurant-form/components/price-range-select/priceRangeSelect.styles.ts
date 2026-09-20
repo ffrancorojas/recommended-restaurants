@@ -9,6 +9,4 @@ export const styles = StyleSheet.create({
   },
   text: { fontSize: 15, color: colors.text, flexShrink: 1 },
   options: { marginTop: 6, borderWidth: 1, borderColor: colors.border, borderRadius: 12, overflow: 'hidden' },
-  option: { minHeight: 44, padding: 12, flexDirection: 'row', justifyContent: 'space-between', backgroundColor: colors.surface },
-  selected: { backgroundColor: colors.softGreen },
 });
