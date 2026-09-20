@@ -17,7 +17,7 @@ export const RestaurantNameField = ({ value, onChange, visitOnly = false }: Rest
         value={value.name}
         onChangeText={(text) => onChange('name', text)}
       />
-      <RestaurantSearchButtons name={value.name} disabled={visitOnly} />
+      <RestaurantSearchButtons name={value.name} locality={value.locality} disabled={visitOnly} />
     </View>
     <AppText
       style={styles.help}

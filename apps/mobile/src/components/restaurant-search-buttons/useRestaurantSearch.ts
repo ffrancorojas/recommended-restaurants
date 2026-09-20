@@ -10,7 +10,7 @@ export const useRestaurantSearch = (name: string, locality = '') => {
       return;
     }
 
-    const query = encodeURIComponent([name.trim(), locality.trim()].filter(Boolean).join(' '));
+    const query = encodeURIComponent([name.trim(), locality.trim()].filter(Boolean).join(', '));
     try {
       await Linking.openURL(
         service === 'maps'

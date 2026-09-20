@@ -19,7 +19,7 @@ export const FilterButton = ({ activeFilterCount, filtersVisible, onPress }: Fil
         <View style={styles.filterFunnel} />
         <View style={styles.filterStem} />
       </View>
-      {activeFilterCount && (
+      {!!activeFilterCount && (
         <View style={styles.filterBadge}>
           <AppText style={styles.filterBadgeText} text={String(activeFilterCount)} />
         </View>
