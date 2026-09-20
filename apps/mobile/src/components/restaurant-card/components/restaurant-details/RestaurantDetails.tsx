@@ -9,7 +9,7 @@ export const RestaurantDetails = ({ restaurant, onDelete }: RestaurantDetailsPro
     <Info label="Recomendado por" text={restaurant.recommendedBy} />
     <Info label="Platos recomendados" text={restaurant.dishes} />
     <Info label="Observaciones" text={restaurant.notes} />
-    {restaurant.visited ? <Info label="Mi opinión" text={restaurant.opinion} /> : null}
+    {restaurant.visited && <Info label="Mi opinión" text={restaurant.opinion} />}
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={`Eliminar ${restaurant.name}`}
