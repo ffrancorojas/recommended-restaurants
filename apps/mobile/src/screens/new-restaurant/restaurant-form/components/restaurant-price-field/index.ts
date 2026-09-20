@@ -1,0 +1,1 @@
+export { RestaurantPriceField } from './RestaurantPriceField';

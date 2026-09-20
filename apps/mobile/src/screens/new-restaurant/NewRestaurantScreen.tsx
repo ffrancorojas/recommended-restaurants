@@ -1,10 +1,10 @@
-import { RestaurantForm, ScreenLayout } from '@/components';
+import { ScreenLayout } from '@/components';
 import { ScrollView } from 'react-native';
 import { styles } from './newRestaurantScreen.styles';
-import type { NewRestaurantScreenProps } from './newRestaurantScreen.types';
 import { useNewRestaurantScreen } from './useNewRestaurantScreen';
+import { RestaurantForm } from './restaurant-form';
 
-export const NewRestaurantScreen = ({ navigation, route }: NewRestaurantScreenProps) => {
+export const NewRestaurantScreen = () => {
   const {
     restaurantId,
     visitOnly,
@@ -14,25 +14,35 @@ export const NewRestaurantScreen = ({ navigation, route }: NewRestaurantScreenPr
     legacyPrice,
     update,
     save,
+    goBack,
     setViewportHeight,
     setContentHeight,
     setOpinionY,
-  } = useNewRestaurantScreen({ navigation, route });
+  } = useNewRestaurantScreen();
 
   return (
     <ScreenLayout
       title={visitOnly ? 'Valorar visita' : restaurantId ? 'Editar restaurante' : 'Nueva entrada'}
       backLabel={restaurantId ? 'Volver' : 'Inicio'}
-      onBack={() => navigation.goBack()}
+      onBack={goBack}
       avoidKeyboard
     >
-      <ScrollView ref={scroll} contentContainerStyle={styles.form} keyboardShouldPersistTaps="handled"
+      <ScrollView
+        ref={scroll}
+        contentContainerStyle={styles.form}
+        keyboardShouldPersistTaps="handled"
         onLayout={(event) => setViewportHeight(event.nativeEvent.layout.height)}
-        onContentSizeChange={(_, height) => setContentHeight(height)}>
-        <RestaurantForm value={form} onChange={update} onSave={save} visitOnly={visitOnly}
+        onContentSizeChange={(_, height) => setContentHeight(height)}
+      >
+        <RestaurantForm
+          value={form}
+          onChange={update}
+          onSave={save}
+          visitOnly={visitOnly}
           opinionMinHeight={visitOnly ? Math.max(0, viewportHeight - 40) : undefined}
           onOpinionLayout={setOpinionY}
-          legacyPrice={legacyPrice} />
+          legacyPrice={legacyPrice}
+        />
       </ScrollView>
     </ScreenLayout>
   );

@@ -1,0 +1,1 @@
+export { RestaurantRatingField } from './RestaurantRatingField';

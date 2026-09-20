@@ -21,10 +21,6 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  mapsIcon: { backgroundColor: colors.softGreen },
-  googleIcon: { backgroundColor: colors.softSand },
-  mapsSymbol: { color: '#276559', fontSize: 20, fontWeight: '900' },
-  googleSymbol: { color: '#4285F4', fontSize: 16, fontWeight: '900' },
   visitedSymbol: { color: '#276559', fontSize: 12, fontWeight: '800' },
   chevron: {
     width: 10,

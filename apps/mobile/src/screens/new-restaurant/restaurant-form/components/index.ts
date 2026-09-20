@@ -1,0 +1,10 @@
+export { RestaurantNameField } from './restaurant-name-field';
+export { LocalityField } from './locality-field';
+export { DishesField } from './dishes-field';
+export { RestaurantPriceField } from './restaurant-price-field';
+export { RestaurantTypesField } from './restaurant-types-field';
+export { RecommendedByField } from './recommended-by-field';
+export { NotesField } from './notes-field';
+export { RestaurantVisitField } from './restaurant-visit-field';
+export { OpinionField } from './opinion-field';
+export { RestaurantRatingField } from './restaurant-rating-field';

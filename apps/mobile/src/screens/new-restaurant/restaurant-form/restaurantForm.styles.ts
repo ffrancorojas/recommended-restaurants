@@ -23,17 +23,6 @@ export const styles = StyleSheet.create({
     minHeight: 52,
   },
   nameInput: { flex: 1 },
-  searchIcon: {
-    height: 52,
-    width: 48,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  mapsIcon: { backgroundColor: colors.softGreen },
-  googleIcon: { backgroundColor: colors.softSand },
-  mapsSymbol: { color: '#276559', fontSize: 28, fontWeight: '900' },
-  googleSymbol: { color: '#4285F4', fontSize: 23, fontWeight: '900' },
   help: { color: '#857B73', fontSize: 12, marginTop: 7, lineHeight: 17 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 20 },
   chip: {
