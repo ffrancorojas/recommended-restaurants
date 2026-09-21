@@ -1,10 +1,12 @@
 import { Pressable } from 'react-native';
 import { AppText } from '@/components/text';
-import { styles } from '../../restaurantCard.styles';
+import { createRestaurantCardStyles } from '../../restaurantCard.styles';
 import type { EditRestaurantButtonProps } from './editRestaurantButton.types';
+import { useThemedStyles } from '@/theme';
 
-export const EditRestaurantButton = ({ name, onEdit }: EditRestaurantButtonProps) => (
-  <Pressable
+export const EditRestaurantButton = ({ name, onEdit }: EditRestaurantButtonProps) => {
+  const styles = useThemedStyles(createRestaurantCardStyles);
+  return <Pressable
     accessibilityRole="button"
     accessibilityLabel={`Editar ${name}`}
     style={styles.iconButton}
@@ -15,5 +17,5 @@ export const EditRestaurantButton = ({ name, onEdit }: EditRestaurantButtonProps
     }}
   >
     <AppText style={styles.edit} text="✎" />
-  </Pressable>
-);
+  </Pressable>;
+};

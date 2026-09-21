@@ -1,6 +1,6 @@
 import { AppText } from '@/components';
 import { Pressable, ScrollView, View } from 'react-native';
-import { styles } from '../../filters.styles';
+import { useFiltersStyles } from '../../filters.styles';
 import type { TypesFilterProps } from './typesFilter.types';
 
 export const TypesFilter = ({
@@ -11,8 +11,9 @@ export const TypesFilter = ({
   reloadTypes,
   updateFiltersValue,
   updateFiltersOpen,
-}: TypesFilterProps) => (
-  <>
+}: TypesFilterProps) => {
+  const styles = useFiltersStyles();
+  return <>
     <Pressable
       accessibilityRole="button"
       accessibilityLabel="Filtrar por tipos de comida"
@@ -77,5 +78,5 @@ export const TypesFilter = ({
         </ScrollView>
       </View>
     ) : null}
-  </>
-);
+  </>;
+};

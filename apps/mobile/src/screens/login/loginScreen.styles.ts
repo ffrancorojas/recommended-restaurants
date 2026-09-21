@@ -1,7 +1,7 @@
-import { colors } from '@/theme';
+import type { AppColors } from '@/theme';
 import { StyleSheet } from 'react-native';
 
-export const styles = StyleSheet.create({
+export const createLoginScreenStyles = (colors: AppColors) => StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.background },
   keyboard: { flex: 1 },
   content: { flexGrow: 1, paddingHorizontal: 24, paddingVertical: 40 },

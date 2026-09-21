@@ -6,4 +6,5 @@ export type AppButtonProps = {
   variant?: 'primary' | 'secondary';
   style?: StyleProp<ViewStyle>;
   accessibilityLabel?: string;
+  disabled?: boolean;
 };

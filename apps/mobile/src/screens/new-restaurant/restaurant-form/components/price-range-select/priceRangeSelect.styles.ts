@@ -1,7 +1,7 @@
 import { StyleSheet } from 'react-native';
-import { colors } from '@/theme';
+import type { AppColors } from '@/theme';
 
-export const styles = StyleSheet.create({
+export const createPriceRangeSelectStyles = (colors: AppColors) => StyleSheet.create({
   trigger: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
     minHeight: 52, paddingHorizontal: 14, borderRadius: 12,

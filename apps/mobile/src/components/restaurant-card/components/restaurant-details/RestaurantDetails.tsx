@@ -1,11 +1,13 @@
 import { Pressable, View } from 'react-native';
 import { Info } from '../info';
 import { AppText } from '@/components/text';
-import { styles } from './restaurantDetails.styles';
+import { createRestaurantDetailsStyles } from './restaurantDetails.styles';
 import type { RestaurantDetailsProps } from './restaurantDetails.types';
+import { useThemedStyles } from '@/theme';
 
-export const RestaurantDetails = ({ restaurant, onDelete }: RestaurantDetailsProps) => (
-  <View style={styles.details}>
+export const RestaurantDetails = ({ restaurant, onDelete }: RestaurantDetailsProps) => {
+  const styles = useThemedStyles(createRestaurantDetailsStyles);
+  return <View style={styles.details}>
     <Info label="Recomendado por" text={restaurant.recommendedBy} />
     <Info label="Platos recomendados" text={restaurant.dishes} />
     <Info label="Observaciones" text={restaurant.notes} />
@@ -21,5 +23,5 @@ export const RestaurantDetails = ({ restaurant, onDelete }: RestaurantDetailsPro
     >
       <AppText style={styles.delete} text="Eliminar" />
     </Pressable>
-  </View>
-);
+  </View>;
+};

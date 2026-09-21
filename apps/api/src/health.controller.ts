@@ -11,7 +11,7 @@ export class HealthController {
   @Get()
   async check() {
     try {
-      await this.db.query('SELECT 1 FROM users LIMIT 0');
+      await this.db.query('SELECT firebase_uid FROM users LIMIT 0');
       return { status: 'ok' };
     } catch { throw new ServiceUnavailableException('Base de datos no disponible o sin migraciones.'); }
   }

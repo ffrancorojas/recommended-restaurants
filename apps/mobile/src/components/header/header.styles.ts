@@ -1,7 +1,7 @@
-import { colors } from '@/theme';
+import type { AppColors } from '@/theme';
 import { StyleSheet } from 'react-native';
 
-export const styles = StyleSheet.create({
+export const createHeaderStyles = (colors: AppColors) => StyleSheet.create({
   header: {
     height: 62,
     paddingHorizontal: 20,

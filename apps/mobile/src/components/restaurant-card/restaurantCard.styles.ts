@@ -1,7 +1,7 @@
-import { colors } from '@/theme';
+import type { AppColors } from '@/theme';
 import { StyleSheet } from 'react-native';
 
-export const styles = StyleSheet.create({
+export const createRestaurantCardStyles = (colors: AppColors) => StyleSheet.create({
   visitStatus: { flexDirection: 'row', alignItems: 'center', height: 32, gap: 8, flexShrink: 0 },
   visitButton: { flexShrink: 0, height: 32, justifyContent: 'center', paddingHorizontal: 12, borderRadius: 8, backgroundColor: colors.softGreen },
   card: {
@@ -10,7 +10,7 @@ export const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 8,
     borderWidth: 1,
-    borderColor: '#EEE6DE',
+    borderColor: colors.border,
   },
   top: { flexDirection: 'row', gap: 8, alignItems: 'flex-end' },
   nameArea: { flex: 1, minWidth: 0 },
@@ -21,7 +21,7 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  visitedSymbol: { color: '#276559', fontSize: 12, fontWeight: '800' },
+  visitedSymbol: { color: colors.map, fontSize: 12, fontWeight: '800' },
   chevron: {
     width: 10,
     height: 10,
@@ -31,7 +31,7 @@ export const styles = StyleSheet.create({
     transform: [{ rotate: '45deg' }],
   },
   chevronExpanded: { transform: [{ rotate: '225deg' }] },
-  edit: { color: '#276559', fontSize: 22, fontWeight: '700' },
+  edit: { color: colors.map, fontSize: 22, fontWeight: '700' },
   title: { fontSize: 17, fontWeight: '900', color: colors.text },
   summaryRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, marginTop: 8 },
   metadata: {
@@ -42,7 +42,7 @@ export const styles = StyleSheet.create({
   tag: {
     alignSelf: 'flex-start',
     backgroundColor: colors.softGreen,
-    color: '#276559',
+    color: colors.map,
     fontWeight: '800',
     fontSize: 11,
     paddingVertical: 3,

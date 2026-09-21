@@ -1,9 +1,10 @@
 import { StyleSheet, View } from 'react-native';
-import { colors } from '@/theme';
+import { useThemedStyles, type AppColors } from '@/theme';
 
 // A location marker with an inset confirmation represents a completed visit.
 // The parent status supplies the accessible label.
 export function VisitedIcon() {
+  const styles = useThemedStyles(createVisitedIconStyles);
   return (
     <View accessible={false} pointerEvents="none" style={styles.icon}>
       <View style={styles.ground} />
@@ -13,7 +14,7 @@ export function VisitedIcon() {
   );
 }
 
-const styles = StyleSheet.create({
+const createVisitedIconStyles = (colors: AppColors) => StyleSheet.create({
   icon: { width: 32, height: 32, borderRadius: 10, backgroundColor: colors.softGreen },
   ground: {
     position: 'absolute', left: 4, top: 21, width: 24, height: 8,

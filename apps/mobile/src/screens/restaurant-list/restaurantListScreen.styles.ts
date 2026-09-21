@@ -1,7 +1,7 @@
-import { colors } from '@/theme';
+import type { AppColors } from '@/theme';
 import { StyleSheet } from 'react-native';
 
-export const styles = StyleSheet.create({
+export const createRestaurantListScreenStyles = (colors: AppColors) => StyleSheet.create({
   page: { flex: 1, justifyContent: 'flex-start', paddingHorizontal: 20 },
   actions: { flexDirection: 'row', alignItems: 'stretch', gap: 10, marginBottom: 10 },
   addButton: {

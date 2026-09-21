@@ -1,9 +1,10 @@
 import { AppButton, AppText, RestaurantCard, ScreenLayout } from '@/components';
 import { FlatList, View } from 'react-native';
-import { styles } from './restaurantListScreen.styles';
+import { createRestaurantListScreenStyles } from './restaurantListScreen.styles';
 import type { RestaurantListScreenProps } from './restaurantListScreen.types';
 import { useRestaurantListScreen } from './useRestaurantListScreen';
 import { FilterButton, Filters } from './components';
+import { useThemedStyles } from '@/theme';
 
 export const RestaurantListScreen = ({ navigation }: RestaurantListScreenProps) => {
   const {
@@ -19,6 +20,7 @@ export const RestaurantListScreen = ({ navigation }: RestaurantListScreenProps) 
     updateFiltersValue,
     updateFiltersOpen,
   } = useRestaurantListScreen();
+  const styles = useThemedStyles(createRestaurantListScreenStyles);
 
   return (
     <ScreenLayout title="Mi listado" onBack={() => navigation.goBack()}>

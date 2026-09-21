@@ -1,6 +1,6 @@
 import { existsSync } from 'node:fs';
 
-if (existsSync('.env')) process.loadEnvFile('.env');
+if (!process.env.VERCEL && existsSync('.env')) process.loadEnvFile('.env');
 
 export function getConfig() {
   const databaseUrl = process.env.DATABASE_URL;
@@ -14,7 +14,7 @@ export function getConfig() {
   return {
     databaseUrl,
     port,
-    host: process.env.HOST ?? '127.0.0.1',
+    host: process.env.HOST ?? (process.env.VERCEL ? '0.0.0.0' : '127.0.0.1'),
     corsOrigins: (process.env.CORS_ORIGINS ?? 'http://localhost:8081')
       .split(',').map((origin) => origin.trim()).filter(Boolean),
   };

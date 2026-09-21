@@ -4,9 +4,11 @@ Monorepo con npm workspaces: aplicación Expo y backend NestJS con PostgreSQL.
 
 ## Estado actual
 
-- **API funcional:** registro, login, consulta de usuario, logout y creación, consulta, edición y eliminación de restaurantes privados. Incluye búsqueda, filtros por tipos de comida y paginación.
-- **Móvil:** ofrece registro, activación por correo e inicio de sesión real. Las cuentas autenticadas consultan y guardan restaurantes en la API; la demo conserva sus datos locales de AsyncStorage por separado. La sesión se mantiene en memoria: al cerrar la app hay que volver a entrar. Obtiene el catálogo de tipos del backend y limita sus opciones según los filtros activos.
-- Los datos locales existentes no se migran ni se eliminan al reorganizar el código.
+- **API:** desplegada en Vercel y conectada a PostgreSQL en Neon. El acceso usa Google a través de Firebase Authentication, con sesiones revocables y restaurantes privados por usuario. Incluye búsqueda, filtros y paginación.
+- **Android:** el acceso con Google y la conexión a la API se han probado en un APK. La sesión de la API se guarda con Expo SecureStore y se comprueba al abrir la app. Dura siete días; después se vuelve a entrar con Google. La interfaz sigue el modo claro u oscuro del dispositivo.
+- **Demo:** conserva sus datos en AsyncStorage, sin cuenta ni sincronización. Sigue disponible en Expo Go y otras plataformas. No se importa automáticamente a una cuenta.
+- **Google Play:** hay perfiles EAS separados para APK de prueba con Google (`preview-google`) y AAB para tienda (`production-google`). El AAB actual se generó antes de los últimos cambios visuales y habrá que regenerarlo al terminar las pruebas.
+- **Demo:** el perfil EAS `preview` continúa siendo solo demo.
 
 ## Estructura
 
@@ -14,7 +16,7 @@ Monorepo con npm workspaces: aplicación Expo y backend NestJS con PostgreSQL.
 apps/
   mobile/             App Expo, pantallas y componentes
   api/
-    src/auth/         Usuarios, contraseñas y sesiones
+    src/auth/         Google, verificación Firebase y sesiones
     src/restaurants/  Restaurantes y permisos por propietario
     migrations/       Evolución versionada del esquema SQL
     test/             Pruebas HTTP contra PostgreSQL
@@ -80,7 +82,7 @@ npm run api:start
 
 ## APK para compartir (Android)
 
-El perfil `preview` de `apps/mobile/eas.json` genera un APK independiente, sin Expo Go ni servidor de desarrollo. Esta versión ofrece únicamente la demo: guarda los restaurantes en cada dispositivo y utiliza el catálogo de tipos incluido en la app. No sincroniza datos entre móviles. Las búsquedas de Google y Maps necesitan internet.
+Los perfiles `preview` y `preview-google` de `apps/mobile/eas.json` generan APK independientes, sin Expo Go ni servidor de desarrollo. `preview` ofrece únicamente la demo, con datos guardados en el dispositivo. `preview-google` usa el login de Google y la API pública; los datos quedan en PostgreSQL en Neon. Las búsquedas de Google y Maps necesitan internet.
 
 Desde `apps/mobile`, inicia sesión en tu cuenta de Expo y genera el APK:
 
@@ -95,42 +97,40 @@ Cuando termine, descarga el APK desde el enlace de EAS y compártelo con tus pro
 
 Referencia: [APK con EAS Build](https://docs.expo.dev/build-reference/apk/).
 
-## Probar la API con cuentas reales
+## Acceso con Google
 
-En Swagger, registra una cuenta con `POST /api/v1/auth/register` enviando `name`, `nick`, `email` y `password`. Activa la cuenta desde el correo y después usa `/auth/login` para obtener `accessToken` y pegarlo en **Authorize**. El registro ya no devuelve una sesión. También puedes usar PowerShell tras activar la cuenta:
+1. En Firebase, habilita Authentication → Google y registra Android con el paquete `com.restaurantes.recomendados`.
+2. Añade la SHA-1 de la firma de EAS. Cuando publiques en Google Play, añade también la SHA-1 de **la firma de la aplicación de Google Play**, que puede ser distinta de la de subida/EAS.
+3. Descarga `google-services.json` actualizado a `apps/mobile/google-services.json`. Está ignorado por Git. No contiene credenciales de administración ni de Neon; es configuración cliente y quedará incorporado en la app compilada.
+4. Configura `FIREBASE_PROJECT_ID` en la API con el proyecto de Firebase. No hace falta una clave privada de cuenta de servicio para verificar estos tokens. La API rechaza el modo emulador de Firebase.
+5. Ejecuta las migraciones antes de iniciar la nueva API. La migración `010_google_auth.sql` añade el UID de Firebase y permite usuarios sin contraseña, conservando usuarios y restaurantes anteriores.
+6. Configura `EXPO_PUBLIC_API_URL` con la API accesible desde el móvil (incluye `/api/v1`). Usa HTTPS para el despliegue público y nunca pongas la conexión de Neon en variables `EXPO_PUBLIC_*`.
 
-```powershell
-$apiUrl = 'http://127.0.0.1:3000/api/v1'
-$credentials = @{ email = 'felix@example.com'; password = 'una-clave-local-larga' } | ConvertTo-Json
-$session = Invoke-RestMethod "$apiUrl/auth/login" -Method Post -ContentType 'application/json' -Body $credentials
-$headers = @{ Authorization = "Bearer $($session.accessToken)" }
-$restaurant = @{ name = 'Casa de comidas'; locality = 'Madrid'; type = 'Tapas'; recommendedBy = 'Ana' } | ConvertTo-Json
-Invoke-RestMethod "$apiUrl/restaurants" -Method Post -Headers $headers -ContentType 'application/json' -Body $restaurant
-Invoke-RestMethod "$apiUrl/restaurants?types=Tapas&limit=20" -Headers $headers
-```
+La librería nativa de Google no funciona en Expo Go: para probar el login hace falta un nuevo APK o development build. El botón solo se ofrece en Android nativo configurado y con `EXPO_PUBLIC_DEMO_ONLY=false`.
 
-Si la cuenta existe, utiliza `/auth/login` en lugar de `/auth/register`.
+Para EAS, el archivo ignorado se suministra mediante una variable **File** llamada `GOOGLE_SERVICES_JSON`, en el entorno de la compilación. `app.config.js` admite esa ruta o el archivo local. `EXPO_PUBLIC_API_URL` apunta a la API pública en los entornos `preview` y `production`; `preview-google` genera el APK de prueba y `production-google` genera el AAB. El perfil `preview` conserva la demo. No se deben subir claves privadas ni archivos de conexión de la API a EAS.
 
-| Método | Ruta bajo `/api/v1` | Función |
+Flujo: Google entrega su credencial al SDK nativo de Firebase; la app obtiene un **ID token de Firebase**, lo envía a `POST /api/v1/auth/google` y recibe una sesión propia de la API. La API comprueba firma, caducidad, proyecto emisor, proveedor Google y correo verificado; no acepta un correo o UID aportados por el cliente. El token Google no sustituye al token Firebase en ese endpoint.
+
+Las identidades se vinculan por UID inmutable de Firebase. No se fusionan automáticamente cuentas por correo: si una cuenta antigua tiene el mismo email, se devuelve un conflicto para evitar apropiaciones. Esas cuentas y sus restaurantes permanecen en la base de datos y necesitan un procedimiento explícito de migración. Los endpoints de contraseña y confirmación por correo han sido retirados.
+
+Las sesiones duran siete días, solo guardan su hash SHA-256 en PostgreSQL y se revocan al cerrar sesión. Cerrar sesión requiere conexión con la API; si no se puede revocar, la app informa del fallo. La sesión Firebase temporal se cierra después del intercambio. Deshabilitar una cuenta en Firebase no revoca automáticamente las sesiones propias ya emitidas: para una revocación administrativa hay que eliminar sus sesiones de la API. Esta implementación verifica la firma y caducidad del ID token, no su revocación remota en Firebase.
+
+| Método | Ruta bajo /api/v1 | Función |
 | --- | --- | --- |
-| POST | `/auth/register` | Crear cuenta pendiente y enviar confirmación |
-| POST | `/auth/resend-confirmation` | Reenviar confirmación enviando `email` |
-| GET | `/auth/confirm-email?token=…` | Página para confirmar la activación |
-| POST | `/auth/confirm-email` | Activar desde el formulario del correo |
-| POST | `/auth/verify-email` | Activar mediante JSON `{ token }` |
-| POST | `/auth/login` | Iniciar sesión |
-| GET | `/auth/me` | Consultar usuario autenticado |
-| POST | `/auth/logout` | Invalidar la sesión actual |
-| GET | `/restaurants` | Listar restaurantes propios |
-| GET | `/restaurant-types` | Catálogo de tipos para formulario y filtros (público) |
-| POST | `/restaurants` | Crear restaurante |
-| GET | `/restaurants/:id` | Consultar restaurante propio |
-| PATCH | `/restaurants/:id` | Modificar solo los campos enviados |
-| DELETE | `/restaurants/:id` | Eliminar restaurante propio |
+| POST | /auth/google | Recibir { idToken } y devolver { accessToken, expiresAt, user } |
+| GET | /auth/me | Consultar usuario autenticado |
+| POST | /auth/logout | Revocar la sesión actual |
+| GET | /restaurants | Listar restaurantes propios |
+| GET | /restaurant-types | Catálogo público de tipos |
+| POST | /restaurants | Crear restaurante |
+| GET | /restaurants/:id | Consultar restaurante propio |
+| PATCH | /restaurants/:id | Modificar los campos enviados |
+| DELETE | /restaurants/:id | Eliminar restaurante propio |
 
-El listado devuelve `{ items, limit, offset }`. Acepta `query`, `locality`, `price`, `types`, `limit` (1–100, por defecto 50) y `offset`. Para varios tipos: `?types=Tapas&types=Sushi`. `query` busca también en el nombre de quien recomendó el restaurante. `name` es obligatorio; el resto de campos de creación utiliza una cadena vacía por defecto. Los contratos TypeScript no sustituyen la validación en el servidor.
+Usa el `accessToken` de la API como Bearer en Swagger o en tus peticiones. Los restaurantes se restringen al usuario de la sesión, nunca a un propietario enviado en el cuerpo.
 
-Las contraseñas, de 12 a 128 caracteres, se almacenan con scrypt y sal aleatoria. Los tokens son opacos, duran siete días y solo se guarda su hash SHA-256 en la base de datos. Logout revoca el token inmediatamente. Las respuestas nunca incluyen hashes. Los intentos de login y registro tienen límites por IP. Cada consulta de restaurantes se restringe al propietario obtenido de la sesión, nunca a un usuario enviado en el cuerpo.
+El listado devuelve `{ items, limit, offset }` y admite `query`, `locality`, `price`, `types`, `visitedOnly`, `limit` (1–100) y `offset`. Para varios tipos: `?types=Tapas&types=Sushi`.
 
 ## Verificación
 
@@ -148,23 +148,22 @@ npm test
 
 Para detener PostgreSQL conservando los datos: `npm run db:down`.
 
-## Siguiente integración
+## Próximos pasos
 
-Queda guardar la sesión en almacenamiento seguro para mantenerla al reiniciar la app y ofrecer una importación explícita de las recomendaciones locales. Todavía no hay recuperación de contraseña. El límite de peticiones actual es en memoria y está pensado para una sola instancia de API.
+La API en Vercel y la base persistente en Neon ya están en uso; el login de Google se probó en Android. Los siguientes pasos son completar la verificación de Play Console, terminar de revisar la interfaz clara/oscura y generar el AAB actualizado para las pruebas de Play. Antes de publicar también hay que ofrecer la eliminación de cuenta/datos y las páginas de privacidad necesarias. La importación de datos de la demo es una mejora pendiente.
 
-## Correo de activación
+El límite de peticiones actual está en memoria y está pensado para una instancia de API; hay que revisarlo para un despliegue con múltiples instancias.
 
-El formulario de registro está desactivado por defecto: al pulsar «Crear cuenta» se muestra «Registro temporalmente no disponible» y un acceso a la demo. Cuando el correo esté configurado, establece `EXPO_PUBLIC_REGISTRATION_ENABLED=true` en `apps/mobile/.env` y reinicia Expo para recuperar el formulario. Esta opción controla la interfaz; el endpoint de registro de la API conserva su comportamiento.
+La conexión de Neon se guarda localmente en `apps/api/.env.neon`, independiente de `apps/api/.env`, que conserva desarrollo y pruebas locales. Para aplicar migraciones a Neon de forma explícita:
 
-Configura `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASSWORD`, `MAIL_FROM` y `PUBLIC_API_URL` en `apps/api/.env`. `PUBLIC_API_URL` debe incluir `/api/v1` y ser accesible desde el dispositivo que abre el correo. Para el puerto 465 usa `SMTP_SECURE=true`; para 587 usa `false` y STARTTLS. En producción se exige TLS. Las opciones siguen la [documentación SMTP de Nodemailer](https://nodemailer.com/smtp).
+```powershell
+cd apps/api
+node --env-file=.env.neon scripts/migrate.mjs
+```
 
-Aplica `npm run db:migrate` antes de iniciar el backend. La migración `004` añade nombre, nick único y confirmación. Las cuentas anteriores también deben confirmar el email mediante «Reenviar activación» y sus sesiones anteriores se invalidan. El nick acepta de 3 a 40 letras ASCII, números o guiones bajos y no distingue mayúsculas. La contraseña tiene de 12 a 128 caracteres.
+Las actualizaciones de Android no recrean PostgreSQL. Las migraciones se ejecutan por separado y las ya aplicadas no se modifican. Mantén copias de seguridad externas antes de cambios de esquema con datos reales.
 
-El token aleatorio se almacena únicamente como hash, caduca en 24 horas y se consume una sola vez. Abrir el enlace no activa por sí solo la cuenta: hay que pulsar «Activar cuenta», para evitar activaciones por lectores automáticos de correo. Reenviar invalida el enlace anterior y se limita a una solicitud por minuto por cuenta, además del límite por IP. Si falla SMTP, se revierte el registro o reenvío para permitir reintentar. No se incluyen tokens de activación en respuestas de registro ni logs. Sin configuración SMTP, el registro devuelve un error de servicio y no crea la cuenta.
-
-Los iconos de Google y Google Maps de la app siguen abriendo búsquedas sin clave de API.
-
-Referencias: [NestJS](https://docs.nestjs.com/), [monorepos Expo](https://docs.expo.dev/guides/monorepos/), [consultas parametrizadas con pg](https://node-postgres.com/features/queries).
+Referencias: [Google con Expo](https://docs.expo.dev/guides/google-authentication/), [Firebase Admin: verificación](https://firebase.google.com/docs/auth/admin/verify-id-tokens), [Expo SecureStore](https://docs.expo.dev/versions/latest/sdk/securestore/).
 
 ## Registrar una visita
 

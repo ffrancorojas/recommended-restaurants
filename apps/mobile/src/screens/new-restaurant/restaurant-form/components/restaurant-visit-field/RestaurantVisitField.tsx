@@ -1,11 +1,12 @@
 import { Pressable, View } from 'react-native';
 import { AppText } from '@/components/text';
-import { styles } from '../../restaurantForm.styles';
+import { useRestaurantFormStyles } from '../../restaurantForm.styles';
 import type { RestaurantFieldProps } from '../../restaurantForm.types';
 import { VisitedIcon } from '@/components/restaurant-card/VisitedIcon';
 
-export const RestaurantVisitField = ({ value, onChange, visitOnly = false }: RestaurantFieldProps) => (
-  <View style={styles.field}>
+export const RestaurantVisitField = ({ value, onChange, visitOnly = false }: RestaurantFieldProps) => {
+  const styles = useRestaurantFormStyles();
+  return <View style={styles.field}>
     {value.visited ? (
       <View style={styles.visitRow}>
         <View accessible accessibilityLabel="Visita registrada en el formulario">
@@ -22,5 +23,5 @@ export const RestaurantVisitField = ({ value, onChange, visitOnly = false }: Res
         <AppText style={styles.visitButtonText} text="Registrar visita" />
       </Pressable>
     )}
-  </View>
-);
+  </View>;
+};

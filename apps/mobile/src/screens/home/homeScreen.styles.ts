@@ -1,7 +1,7 @@
-import { colors } from '@/theme';
+import type { AppColors } from '@/theme';
 import { StyleSheet } from 'react-native';
 
-export const styles = StyleSheet.create({
+export const createHomeScreenStyles = (colors: AppColors) => StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.background },
   container: { flex: 1, padding: 28, justifyContent: 'center' },
   footer: { paddingHorizontal: 28, paddingBottom: 16 },

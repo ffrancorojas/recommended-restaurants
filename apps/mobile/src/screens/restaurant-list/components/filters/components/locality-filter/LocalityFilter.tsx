@@ -1,14 +1,17 @@
 import { TextInput } from 'react-native';
-import { styles } from '../../filters.styles';
+import { useAppColors } from '@/theme';
+import { useFiltersStyles } from '../../filters.styles';
 import type { LocalityFilterProps } from './localityFilter.types';
 
-export const LocalityFilter = ({ locality, updateFiltersValue }: LocalityFilterProps) => (
-  <TextInput
-    style={styles.mini}
+export const LocalityFilter = ({ locality, updateFiltersValue }: LocalityFilterProps) => {
+  const styles = useFiltersStyles();
+  const colors = useAppColors();
+  return <TextInput
+    style={[styles.mini, { color: colors.text }]}
     accessibilityLabel="Filtrar por localidad"
       placeholder="Localidad: ej. Madrid"
-    placeholderTextColor="#9A9088"
+    placeholderTextColor={colors.placeholder}
     value={locality}
     onChangeText={(value) => updateFiltersValue({ key: 'locality', value })}
-  />
-);
+  />;
+};

@@ -1,8 +1,9 @@
 import { KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Header } from '../header';
-import { styles } from './screenLayout.styles';
+import { createScreenLayoutStyles } from './screenLayout.styles';
 import type { ScreenLayoutProps } from './screenLayout.types';
+import { useThemedStyles } from '@/theme';
 
 export const ScreenLayout = ({
   title,
@@ -11,6 +12,7 @@ export const ScreenLayout = ({
   avoidKeyboard = false,
   children,
 }: ScreenLayoutProps) => {
+  const styles = useThemedStyles(createScreenLayoutStyles);
   const content = (
     <SafeAreaView style={styles.safe}>
       <Header title={title} onBack={onBack} backLabel={backLabel} />

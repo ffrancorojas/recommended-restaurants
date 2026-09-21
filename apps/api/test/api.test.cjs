@@ -7,11 +7,13 @@ const { Test } = require('@nestjs/testing');
 const { AppModule } = require('../dist/app.module');
 const { DATABASE } = require('../dist/database/database.module');
 const { setupApp } = require('../dist/setup');
-const { ConfirmationMailService } = require('../dist/auth/confirmation-mail.service');
-const emails = new Map();
+const { FirebaseTokenService } = require('../dist/auth/firebase-token.service');
+const { UnauthorizedException } = require('@nestjs/common');
+const tokenFor = (uid) => `firebase.${uid}.signature`;
+const identities = { owner: { uid: 'google-owner', email: 'owner@example.com', name: 'Propietario' }, other: { uid: 'google-other', email: 'other@example.com', name: 'Otra persona' } };
 
 const schema = `test_${randomUUID().replaceAll('-', '')}`;
-const password = 'una-clave-de-prueba-larga';
+
 let admin;
 let db;
 let app;
@@ -23,7 +25,11 @@ let restaurant;
 async function startApp() {
   const module = await Test.createTestingModule({ imports: [AppModule] })
     .overrideProvider(DATABASE).useValue(db)
-    .overrideProvider(ConfirmationMailService).useValue({ send: async (email, token) => { emails.set(email, token); } }).compile();
+    .overrideProvider(FirebaseTokenService).useValue({ verify: async (token) => {
+      const identity = identities[token.split('.')[1]];
+      if (!identity) throw new UnauthorizedException('Token no válido.');
+      return identity;
+    } }).compile();
   const instance = module.createNestApplication({ logger: false });
   setupApp(instance, ['http://localhost:8081']);
   await instance.listen(0, '127.0.0.1');
@@ -51,20 +57,12 @@ before(async () => {
   try { await migrate(client); await migrate(client); } finally { client.release(); }
   app = await startApp();
   baseUrl = await app.getUrl();
-  const first = await request('/auth/register', { method: 'POST', body: { name: 'Propietario', nick: 'owner', email: ' OWNER@example.com ', password } });
-  assert.equal(first.status, 201);
-  assert.equal(first.body.accessToken, undefined);
-  assert.equal((await request('/auth/login', { method: 'POST', body: { email: 'owner@example.com', password } })).status, 403);
-  const confirmation = emails.get('owner@example.com');
-  const stored = await db.query('SELECT token_hash FROM email_confirmations');
-  assert.equal(stored.rows[0].token_hash, createHash('sha256').update(confirmation).digest('hex'));
-  assert.equal((await request('/auth/verify-email', { method: 'POST', body: { token: confirmation } })).status, 200);
-  assert.equal((await request('/auth/verify-email', { method: 'POST', body: { token: confirmation } })).status, 400);
-  owner = (await request('/auth/login', { method: 'POST', body: { email: 'owner@example.com', password } })).body;
-  const second = await request('/auth/register', { method: 'POST', body: { name: 'Otra persona', nick: 'other', email: 'other@example.com', password } });
-  assert.equal(second.status, 201);
-  assert.equal((await request('/auth/verify-email', { method: 'POST', body: { token: emails.get('other@example.com') } })).status, 200);
-  other = (await request('/auth/login', { method: 'POST', body: { email: 'other@example.com', password } })).body;
+  const first = await request('/auth/google', { method: 'POST', body: { idToken: tokenFor('owner') } });
+  assert.equal(first.status, 200);
+  owner = first.body;
+  const second = await request('/auth/google', { method: 'POST', body: { idToken: tokenFor('other') } });
+  assert.equal(second.status, 200);
+  other = second.body;
 });
 
 after(async () => {
@@ -83,40 +81,44 @@ test('migraciones repetibles, salud y documentación OpenAPI', async () => {
   assert.equal(result.status, 200);
   assert.deepEqual(result.body, { status: 'ok' });
   const migrations = await db.query('SELECT * FROM schema_migrations');
-  assert.equal(migrations.rowCount, 9);
+  assert.equal(migrations.rowCount, 10);
   const docs = await fetch(`${baseUrl}/api/docs-json`).then((response) => response.json());
   assert.ok(docs.paths['/api/v1/restaurants/{id}'].patch);
 });
 
-test('registro normaliza correo y almacena hashes, nunca contraseñas ni tokens en claro', async () => {
+test('Google crea usuarios sin contraseña y guarda solo el hash de la sesión', async () => {
   assert.equal(owner.user.email, 'owner@example.com');
   assert.deepEqual(Object.keys(owner.user).sort(), ['createdAt', 'email', 'id', 'name', 'nick']);
-  const users = await db.query('SELECT password_hash FROM users WHERE id = $1', [owner.user.id]);
-  assert.match(users.rows[0].password_hash, /^scrypt:/);
-  assert.notEqual(users.rows[0].password_hash, password);
+  const users = await db.query('SELECT password_hash, firebase_uid FROM users WHERE id = $1', [owner.user.id]);
+  assert.equal(users.rows[0].password_hash, null);
+  assert.equal(users.rows[0].firebase_uid, 'google-owner');
   const sessions = await db.query('SELECT token_hash FROM sessions WHERE user_id = $1', [owner.user.id]);
-  assert.notEqual(sessions.rows[0].token_hash, owner.accessToken);
   assert.equal(sessions.rows[0].token_hash, createHash('sha256').update(owner.accessToken).digest('hex'));
-  const duplicate = await request('/auth/register', { method: 'POST', body: { name: 'Duplicado', nick: 'duplicate', email: 'OWNER@example.com', password } });
-  assert.equal(duplicate.status, 409);
-  const invalid = await request('/auth/register', { method: 'POST', body: { email: 'invalid', password: 'short' } });
-  assert.equal(invalid.status, 400);
+  const again = await request('/auth/google', { method: 'POST', body: { idToken: tokenFor('owner') } });
+  assert.equal(again.status, 200);
+  assert.equal(again.body.user.id, owner.user.id);
+  assert.notEqual(again.body.accessToken, owner.accessToken);
 });
 
-test('login real, errores genéricos y rutas protegidas', async () => {
-  const success = await request('/auth/login', { method: 'POST', body: { email: 'owner@example.com', password } });
-  assert.equal(success.status, 200);
-  const me = await request('/auth/me', { token: success.body.accessToken });
-  assert.deepEqual(me.body, owner.user);
-  for (const email of ['owner@example.com', 'missing@example.com']) {
-    const failed = await request('/auth/login', { method: 'POST', body: { email, password: 'contraseña-equivocada' } });
-    assert.equal(failed.status, 401);
-    assert.equal(failed.body.message, 'Correo o contraseña incorrectos.');
+test('solo permite Google verificado y rechaza datos de identidad enviados por el cliente', async () => {
+  assert.equal((await request('/auth/me', { token: owner.accessToken })).body.id, owner.user.id);
+  assert.equal((await request('/auth/google', { method: 'POST', body: { idToken: tokenFor('invalid') } })).status, 401);
+  assert.equal((await request('/auth/google', { method: 'POST', body: { idToken: 'invalid' } })).status, 400);
+  assert.equal((await request('/auth/google', { method: 'POST', body: { idToken: tokenFor('owner'), email: 'intruso@example.com' } })).status, 400);
+  for (const path of ['/auth/register', '/auth/login', '/auth/verify-email', '/auth/resend-confirmation']) {
+    assert.equal((await request(path, { method: 'POST', body: {} })).status, 404);
   }
   for (const path of ['/restaurants', '/auth/me']) {
     assert.equal((await request(path)).status, 401);
     assert.equal((await request(path, { token: 'invalid' })).status, 401);
   }
+});
+
+test('una cuenta distinta no se vincula automáticamente por compartir correo', async () => {
+  identities.collision = { ...identities.owner, uid: 'different-uid' };
+  assert.equal((await request('/auth/google', { method: 'POST', body: { idToken: tokenFor('collision') } })).status, 409);
+  const result = await db.query('SELECT firebase_uid FROM users WHERE id = $1', [owner.user.id]);
+  assert.equal(result.rows[0].firebase_uid, 'google-owner');
 });
 
 test('crear restaurante, validar entrada y rechazar propietario suministrado por el cliente', async () => {
@@ -314,7 +316,7 @@ test('logout invalida el token y se rechazan sesiones caducadas', async () => {
 test('login limita intentos repetidos', async () => {
   let result;
   for (let index = 0; index < 11; index += 1) {
-    result = await request('/auth/login', { method: 'POST', body: { email: 'missing@example.com', password } });
+    result = await request('/auth/google', { method: 'POST', body: { idToken: tokenFor('invalid') } });
   }
   assert.equal(result.status, 429);
 });

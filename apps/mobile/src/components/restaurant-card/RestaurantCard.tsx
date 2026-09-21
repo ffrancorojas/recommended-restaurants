@@ -3,15 +3,17 @@ import { PRICE_RANGES } from '@restaurantes/contracts';
 import { AppText } from '../text';
 import { useState } from 'react';
 import { Pressable, View } from 'react-native';
-import { styles } from './restaurantCard.styles';
+import { createRestaurantCardStyles } from './restaurantCard.styles';
 import type { RestaurantCardProps } from './restaurantCard.types';
 import { RestaurantDetails } from './components/restaurant-details';
 import { EditRestaurantButton } from './components/edit-restaurant-button';
 import { ToggleRestaurantInfoButton } from './components/toggle-restaurant-info-button';
 import { RestaurantVisitStatus } from './components/restaurant-visit-status';
+import { useThemedStyles } from '@/theme';
 
 export const RestaurantCard = ({ restaurant, onDelete, onEdit, onVisit }: RestaurantCardProps) => {
   const [expanded, setExpanded] = useState(false);
+  const styles = useThemedStyles(createRestaurantCardStyles);
 
   return (
     <Pressable

@@ -4,9 +4,11 @@ export function getApiUrl(): string {
 
 export async function apiFetch(path: string, options?: RequestInit): Promise<Response> {
   const baseUrl = getApiUrl();
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 20000);
   try {
-    return await fetch(`${baseUrl}${path}`, options);
+    return await fetch(`${baseUrl}${path}`, { ...options, signal: options?.signal ?? controller.signal });
   } catch {
-    throw new Error(`No se pudo conectar con ${baseUrl}. Comprueba que la API está arrancada y que el móvil y el ordenador están en la misma red Wi-Fi.`);
-  }
+    throw new Error('No se pudo conectar con el servidor. Comprueba tu conexión y vuelve a intentarlo.');
+  } finally { clearTimeout(timeout); }
 }

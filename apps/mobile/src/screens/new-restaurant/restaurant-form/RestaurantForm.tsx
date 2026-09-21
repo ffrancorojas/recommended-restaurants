@@ -1,6 +1,6 @@
 import { View } from 'react-native';
 import { AppButton } from '@/components/button';
-import { styles } from './restaurantForm.styles';
+import { useRestaurantFormStyles } from './restaurantForm.styles';
 import type { RestaurantFormProps } from './restaurantForm.types';
 import { useRestaurantForm } from './useRestaurantForm';
 import {
@@ -19,6 +19,7 @@ import {
 export const RestaurantForm = ({
   value, onChange, onSave, visitOnly = false, onOpinionLayout, opinionMinHeight, legacyPrice,
 }: RestaurantFormProps) => {
+  const styles = useRestaurantFormStyles();
   const { restaurantTypes, typesError, reloadTypes, toggleType } =
     useRestaurantForm({ value, onChange });
   const fieldProps = { value, onChange, visitOnly };

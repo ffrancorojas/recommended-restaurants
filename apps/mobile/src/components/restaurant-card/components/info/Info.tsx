@@ -1,9 +1,10 @@
 import { View } from 'react-native';
 import { AppText } from '@/components/text';
-import { styles } from './info.styles';
+import { useInfoStyles } from './info.styles';
 import type { InfoProps } from './info.types';
 
 export const Info = ({ label, text }: InfoProps) => {
+  const styles = useInfoStyles();
   if (!text) return null;
   return (
     <View style={styles.info}>

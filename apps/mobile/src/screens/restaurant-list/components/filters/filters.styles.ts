@@ -1,7 +1,7 @@
-import { colors } from '@/theme';
+import { useThemedStyles, type AppColors } from '@/theme';
 import { StyleSheet } from 'react-native';
 
-export const styles = StyleSheet.create({
+export const createFiltersStyles = (colors: AppColors) => StyleSheet.create({
   search: {
     backgroundColor: colors.surface,
     borderWidth: 1,
@@ -71,3 +71,5 @@ export const styles = StyleSheet.create({
   checkmark: { color: colors.surface, fontWeight: '800' },
 
 });
+
+export const useFiltersStyles = () => useThemedStyles(createFiltersStyles);

@@ -1,13 +1,15 @@
 import { Pressable, View } from 'react-native';
-import { styles } from '../../restaurantCard.styles';
+import { createRestaurantCardStyles } from '../../restaurantCard.styles';
 import type { ToggleRestaurantInfoButtonProps } from './toggleRestaurantInfoButton.types';
+import { useThemedStyles } from '@/theme';
 
 export const ToggleRestaurantInfoButton = ({
   name,
   expanded,
   onToggle,
-}: ToggleRestaurantInfoButtonProps) => (
-  <Pressable
+}: ToggleRestaurantInfoButtonProps) => {
+  const styles = useThemedStyles(createRestaurantCardStyles);
+  return <Pressable
     accessibilityRole="button"
     accessibilityLabel={`${expanded ? 'Ocultar' : 'Mostrar'} información de ${name}`}
     accessibilityState={{ expanded }}
@@ -19,5 +21,5 @@ export const ToggleRestaurantInfoButton = ({
     }}
   >
     <View style={[styles.chevron, expanded && styles.chevronExpanded]} />
-  </Pressable>
-);
+  </Pressable>;
+};

@@ -1,5 +1,6 @@
 import { Global, Injectable, Module, OnApplicationShutdown, OnModuleInit } from '@nestjs/common';
 import { Pool } from 'pg';
+import { attachDatabasePool } from '@vercel/functions';
 import { getConfig } from '../config';
 
 export const DATABASE = Symbol('DATABASE');
@@ -7,7 +8,8 @@ export const DATABASE = Symbol('DATABASE');
 @Injectable()
 class DatabasePool extends Pool implements OnModuleInit, OnApplicationShutdown {
   constructor() {
-    super({ connectionString: getConfig().databaseUrl, max: 10, connectionTimeoutMillis: 5000 });
+    super({ connectionString: getConfig().databaseUrl, max: 5, connectionTimeoutMillis: 15000, idleTimeoutMillis: 5000 });
+    if (process.env.VERCEL) attachDatabasePool(this);
     this.on('error', () => console.error('Se perdió una conexión inactiva con PostgreSQL.'));
   }
 

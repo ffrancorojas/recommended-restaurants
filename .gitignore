@@ -8,6 +8,7 @@ dist/
 coverage/
 web-build/
 .local/
+.vercel/
 *.apk
 *.aab
 *.jks

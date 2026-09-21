@@ -1,12 +1,12 @@
-import { colors } from '@/theme';
+import type { AppColors } from '@/theme';
 import { StyleSheet } from 'react-native';
 
-export const styles = StyleSheet.create({
+export const createRestaurantDetailsStyles = (colors: AppColors) => StyleSheet.create({
   details: {
     marginTop: 12,
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: '#EEE6DE',
+    borderTopColor: colors.border,
   },
   deleteButton: {
     alignSelf: 'flex-end',

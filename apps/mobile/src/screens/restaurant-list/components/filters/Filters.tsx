@@ -8,7 +8,7 @@ import {
   VisitedFilter,
 } from './components';
 import type { FiltersProps } from './filters.types';
-import { styles } from './filters.styles';
+import { useFiltersStyles } from './filters.styles';
 
 export const Filters = ({
   filtersOpen,
@@ -19,6 +19,7 @@ export const Filters = ({
   typesError,
   reloadTypes,
 }: FiltersProps) => {
+  const styles = useFiltersStyles();
   if (!filtersOpen.filtersVisible) return null;
   const { visitedOnly, locality, price, query, types } = filters;
   const dropdownProps = { updateFiltersValue, updateFiltersOpen };

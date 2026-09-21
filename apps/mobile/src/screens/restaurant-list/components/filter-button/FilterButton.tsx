@@ -1,9 +1,11 @@
 import { Keyboard, Pressable, View } from 'react-native';
-import { styles } from './filterButton.styles';
+import { createFilterButtonStyles } from './filterButton.styles';
 import { AppText } from '@/components';
 import { FilterButtonProps } from './filterButton.types';
+import { useThemedStyles } from '@/theme';
 
 export const FilterButton = ({ activeFilterCount, filtersVisible, onPress }: FilterButtonProps) => {
+  const styles = useThemedStyles(createFilterButtonStyles);
   return (
     <Pressable
       accessibilityRole="button"

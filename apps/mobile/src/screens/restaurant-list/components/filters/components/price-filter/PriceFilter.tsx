@@ -1,11 +1,12 @@
 import { AppText } from '@/components';
 import { Keyboard, Pressable, ScrollView, View } from 'react-native';
 import { PRICE_RANGES } from '../../../../restaurantListScreen.tools';
-import { styles } from '../../filters.styles';
+import { useFiltersStyles } from '../../filters.styles';
 import type { PriceFilterProps } from './priceFilter.types';
 
-export const PriceFilter = ({ price, priceOpen, updateFiltersOpen }: PriceFilterProps) => (
-  <Pressable
+export const PriceFilter = ({ price, priceOpen, updateFiltersOpen }: PriceFilterProps) => {
+  const styles = useFiltersStyles();
+  return <Pressable
     style={[styles.mini, styles.priceTrigger]}
     accessibilityRole="button"
     accessibilityLabel={`Filtrar por precio: ${PRICE_RANGES.find((range) => range.value === price)?.label}`}
@@ -20,8 +21,8 @@ export const PriceFilter = ({ price, priceOpen, updateFiltersOpen }: PriceFilter
       text={PRICE_RANGES.find((range) => range.value === price)?.label ?? 'Todos los precios'}
     />
     <AppText style={styles.dropdownLabel} text={priceOpen ? '▴' : '▾'} />
-  </Pressable>
-);
+  </Pressable>;
+};
 
 export const PriceFilterOptions = ({
   price,
@@ -29,6 +30,7 @@ export const PriceFilterOptions = ({
   updateFiltersValue,
   updateFiltersOpen,
 }: PriceFilterProps) => {
+  const styles = useFiltersStyles();
   if (!priceOpen) return null;
   return (
     <View style={styles.dropdown}>

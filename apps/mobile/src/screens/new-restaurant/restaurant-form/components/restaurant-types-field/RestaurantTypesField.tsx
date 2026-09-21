@@ -1,10 +1,11 @@
 import { Pressable, View } from 'react-native';
 import { AppText } from '@/components/text';
-import { styles } from '../../restaurantForm.styles';
+import { useRestaurantFormStyles } from '../../restaurantForm.styles';
 import type { RestaurantTypesFieldProps } from '../../restaurantForm.types';
 
-export const RestaurantTypesField = ({ value, visitOnly = false, restaurantTypes, typesError, reloadTypes, onToggleType }: RestaurantTypesFieldProps) => (
-  <>
+export const RestaurantTypesField = ({ value, visitOnly = false, restaurantTypes, typesError, reloadTypes, onToggleType }: RestaurantTypesFieldProps) => {
+  const styles = useRestaurantFormStyles();
+  return <>
     <AppText style={styles.label} text="Tipos de local" />
     <AppText style={styles.help} text="Puedes seleccionar varios tipos." />
     {typesError ? <Pressable disabled={visitOnly} accessibilityState={{ disabled: visitOnly }} accessibilityRole="button" onPress={reloadTypes}><AppText text={typesError} /></Pressable> : null}
@@ -26,5 +27,5 @@ export const RestaurantTypesField = ({ value, visitOnly = false, restaurantTypes
         </Pressable>
       ))}
     </View>
-  </>
-);
+  </>;
+};

@@ -1,13 +1,15 @@
 import { Pressable } from 'react-native';
 import { AppText } from '../text';
-import { styles } from './restaurantSearchButtons.styles';
+import { createRestaurantSearchButtonStyles } from './restaurantSearchButtons.styles';
 import type { RestaurantSearchButtonsProps } from './restaurantSearchButtons.types';
 import { useRestaurantSearch } from './useRestaurantSearch';
+import { useThemedStyles } from '@/theme';
 
 export const RestaurantSearchButtons = ({
   name, locality, disabled = false, compact = false,
 }: RestaurantSearchButtonsProps) => {
   const { openSearch } = useRestaurantSearch(name, locality);
+  const styles = useThemedStyles(createRestaurantSearchButtonStyles);
 
   return (
     <>

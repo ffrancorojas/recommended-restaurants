@@ -1,9 +1,9 @@
 import { Keyboard } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
 import { PRICE_RANGES } from '@restaurantes/contracts';
-import { colors } from '@/theme';
+import { useAppColors, useThemedStyles } from '@/theme';
 import type { PriceRange } from '@/types';
-import { styles } from './priceRangeSelect.styles';
+import { createPriceRangeSelectStyles } from './priceRangeSelect.styles';
 import type { PriceRangeSelectProps } from './priceRangeSelect.types';
 
 const options: { value: PriceRange; label: string }[] = [
@@ -12,6 +12,8 @@ const options: { value: PriceRange; label: string }[] = [
 ];
 
 export const PriceRangeSelect = ({ value, onChange, disabled = false }: PriceRangeSelectProps) => {
+  const colors = useAppColors();
+  const styles = useThemedStyles(createPriceRangeSelectStyles);
   const label = options.find((option) => option.value === value)?.label ?? 'Sin especificar';
   return (
     <Dropdown
@@ -30,6 +32,7 @@ export const PriceRangeSelect = ({ value, onChange, disabled = false }: PriceRan
       selectedTextStyle={styles.text}
       placeholderStyle={styles.text}
       itemTextStyle={styles.text}
+      backgroundColor={colors.surface}
       activeColor={colors.softGreen}
       iconColor={colors.text}
     />

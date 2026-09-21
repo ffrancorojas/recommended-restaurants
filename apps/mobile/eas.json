@@ -3,14 +3,37 @@
     "appVersionSource": "remote"
   },
   "build": {
+    "preview-google": {
+      "distribution": "internal",
+      "developmentClient": false,
+      "environment": "preview",
+      "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_DEMO_ONLY": "false"
+      },
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "production-google": {
+      "distribution": "store",
+      "developmentClient": false,
+      "environment": "production",
+      "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_DEMO_ONLY": "false"
+      },
+      "android": {
+        "buildType": "app-bundle"
+      }
+    },
     "preview": {
       "distribution": "internal",
       "developmentClient": false,
       "environment": "preview",
       "autoIncrement": true,
       "env": {
-        "EXPO_PUBLIC_DEMO_ONLY": "true",
-        "EXPO_PUBLIC_REGISTRATION_ENABLED": "false"
+        "EXPO_PUBLIC_DEMO_ONLY": "true"
       },
       "android": {
         "buildType": "apk"

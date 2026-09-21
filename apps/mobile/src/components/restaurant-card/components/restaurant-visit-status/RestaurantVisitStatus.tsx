@@ -3,10 +3,12 @@ import { Pressable, View } from 'react-native';
 import { RatingFace } from '@/components/rating-face/RatingFace';
 import { AppText } from '@/components/text';
 import { VisitedIcon } from '../../VisitedIcon';
-import { styles } from '../../restaurantCard.styles';
+import { createRestaurantCardStyles } from '../../restaurantCard.styles';
 import type { RestaurantVisitStatusProps } from './restaurantVisitStatus.types';
+import { useThemedStyles } from '@/theme';
 
 export const RestaurantVisitStatus = ({ restaurant, onVisit }: RestaurantVisitStatusProps) => {
+  const styles = useThemedStyles(createRestaurantCardStyles);
   const rating = RESTAURANT_RATINGS.find((option) => option.value === restaurant.rating);
 
   return restaurant.visited ? (
