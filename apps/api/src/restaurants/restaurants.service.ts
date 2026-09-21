@@ -4,7 +4,7 @@ import type { Restaurant, RestaurantFormData, RestaurantPage } from '@restaurant
 import { DATABASE } from '../database/database.module';
 import { CreateRestaurantDto, ListRestaurantsDto, UpdateRestaurantDto } from './restaurant.dto';
 
-const columns = `id, name, locality, dishes, price, legacy_price AS "legacyPrice", type, notes, visited, opinion, rating,
+const columns = `id, name, locality, dishes, price, type, notes, visited, opinion, rating,
   recommended_by AS "recommendedBy", created_at AS "createdAt"`;
 type RestaurantRow = Omit<Restaurant, 'createdAt'> & { createdAt: Date };
 const serialize = (row: RestaurantRow): Restaurant => ({ ...row, createdAt: row.createdAt.toISOString() });

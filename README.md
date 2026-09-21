@@ -114,6 +114,10 @@ Flujo: Google entrega su credencial al SDK nativo de Firebase; la app obtiene un
 
 Las identidades se vinculan por UID inmutable de Firebase. No se fusionan automáticamente cuentas por correo: si una cuenta antigua tiene el mismo email, se devuelve un conflicto para evitar apropiaciones. Esas cuentas y sus restaurantes permanecen en la base de datos y necesitan un procedimiento explícito de migración. Los endpoints de contraseña y confirmación por correo han sido retirados.
 
+La migración `011_drop_email_confirmations.sql` elimina únicamente la tabla obsoleta `email_confirmations`, incluidos sus registros (`user_id`, hashes de tokens y fechas de caducidad). Los enlaces de confirmación antiguos ya no tienen un endpoint activo. Conserva `users`, `users.email_verified_at`, `users.firebase_uid` y `sessions`; no cierra sesiones de la API ni modifica Firebase. No usa `CASCADE`: una dependencia externa no prevista hará fallar la migración y revertir la transacción.
+
+Antes de aplicarla, revisa el SQL, comprueba en `schema_migrations` las migraciones ya aplicadas y las que quedarían pendientes, y consulta el número de filas de `email_confirmations`. Guarda una copia si necesitas conservar esos datos: recrear la tabla no recuperaría los tokens eliminados. Después de revisarla, configura `DATABASE_URL` para el destino elegido y ejecuta `npm run db:migrate` desde la raíz (aplica todas las migraciones pendientes). Verifica el registro de `011_drop_email_confirmations.sql` en `schema_migrations`, la ausencia de la tabla y el acceso con Google y una sesión existente. La migración histórica `004` permanece intacta; su eliminación de sesiones no se repite si ya figura aplicada.
+
 Las sesiones duran siete días, solo guardan su hash SHA-256 en PostgreSQL y se revocan al cerrar sesión. Cerrar sesión requiere conexión con la API; si no se puede revocar, la app informa del fallo. La sesión Firebase temporal se cierra después del intercambio. Deshabilitar una cuenta en Firebase no revoca automáticamente las sesiones propias ya emitidas: para una revocación administrativa hay que eliminar sus sesiones de la API. Esta implementación verifica la firma y caducidad del ID token, no su revocación remota en Firebase.
 
 | Método | Ruta bajo /api/v1 | Función |
@@ -134,7 +138,7 @@ El listado devuelve `{ items, limit, offset }` y admite `query`, `locality`, `pr
 
 ## Verificación
 
-Los restaurantes usan IDs `BIGINT GENERATED ALWAYS AS IDENTITY`, asignados por PostgreSQL (`1`, `2`, `3`…). La API los devuelve como cadenas para preservar su precisión. La migración `003` numera los restaurantes existentes por fecha de creación y conserva su UUID en `legacy_id`; las rutas de restaurantes pasan a exigir el nuevo ID numérico. Los usuarios mantienen su UUID. Las secuencias pueden tener huecos por borrados o transacciones fallidas. La demo local utiliza su propio contador persistente y migra los datos anteriores a un almacenamiento `v2`, conservando el original como respaldo.
+Los restaurantes usan IDs `BIGINT GENERATED ALWAYS AS IDENTITY`, asignados por PostgreSQL (`1`, `2`, `3`…). La API los devuelve como cadenas para preservar su precisión. La migración histórica `003` numeró los restaurantes existentes por fecha de creación. Las rutas exigen el ID numérico; la migración `013` retira la copia del UUID antiguo y su restricción única, sin cambiar la clave primaria ni la secuencia. Los usuarios mantienen su UUID. Las secuencias pueden tener huecos por borrados o transacciones fallidas. La demo local utiliza su propio contador persistente y migra los datos anteriores a un almacenamiento `v2`, conservando el original como respaldo.
 
 Cada restaurante incluye `visited` (booleano, inicialmente `false`) y `opinion` (texto de hasta 4000 caracteres). En el formulario, «Ya he estado» permite escribir la opinión; la tarjeta muestra «✓ Visitado» y la opinión aparece al desplegarla. Desmarcar la visita conserva el texto para recuperarlo después. El interruptor «Solo visitados» combina este criterio con los demás filtros y limita también los tipos disponibles; apagado muestra todos. La API ofrece el mismo filtro con `?visitedOnly=true` (`false` muestra todos). Aplica la nueva migración con `npm run db:migrate`. Los datos locales anteriores reciben los valores predeterminados al cargarse.
 
@@ -183,4 +187,20 @@ El campo `type` se guarda como una lista; la API también acepta el texto de los
 
 El formulario y el filtro ofrecen los mismos seis rangos de precio. `price` almacena la clave elegida (`under20`, `20to40`, `40to60`, `60to80`, `80to100` u `over100`), o `''` si no se especifica. El filtro compara la clave directamente.
 
-Aplica `009_restaurant_price_ranges.sql` con `npm run db:migrate` antes de arrancar la API. Los precios anteriores escritos a mano se conservan en `legacy_price` (y en `legacyPrice` en la demo), visibles en la tarjeta y como referencia en el formulario, hasta elegir un rango. Mientras no tengan rango aparecen en «Todos los precios».
+La selección por rangos se conserva en `price`. La migración `012_drop_restaurant_legacy_price.sql` elimina los textos antiguos guardados en `legacy_price`; la API, las tarjetas y el formulario ya no los devuelven ni muestran. Al cargar la demo se elimina `legacyPrice` del almacenamiento activo v2 y los precios libres se convierten en una selección vacía, sin alterar rangos válidos ni IDs. La copia histórica v1 de la demo permanece como respaldo. Los restaurantes sin rango siguen apareciendo en «Todos los precios».
+
+
+## Retirada de campos antiguos (012 y 013)
+
+Las migraciones nuevas eliminan únicamente restaurants.legacy_price y restaurants.legacy_id, junto con la restricción restaurants_legacy_id_key y su índice. No usan CASCADE: dependencias externas inesperadas impiden la operación y el ejecutor revierte la transacción. Se mantienen price, su validación por rangos, los IDs BIGINT, su secuencia, los UUID de users y las sesiones. Las migraciones históricas permanecen intactas.
+
+Se perderán los textos de precios y la correspondencia entre UUID antiguos e IDs actuales. Las rutas de la API ya rechazan UUID de restaurantes con HTTP 400; no se encontraron enlaces activos en la app que dependan de ellos. Cualquier integración externa que consulte esas columnas deberá adaptarse. Si hace falta conservar la correspondencia o los textos, exportarlos antes: recrear las columnas no recupera los datos.
+
+Para aplicar después de revisar:
+
+1. Revisar ambas migraciones, las dependencias y schema_migrations en el destino; respaldar los campos antiguos si se necesitan. El ejecutor aplica todas las migraciones pendientes.
+2. Publicar primero la API actualizada: la versión anterior selecciona legacy_price y fallaría si se elimina la columna antes. La API nueva funciona también con las columnas aún presentes. Actualizar la app móvil para retirar la referencia visual.
+3. Desde apps/api, ejecutar `node --env-file=.env.neon scripts/migrate.mjs` para usar la configuración de Neon, comprobando que no haya una DATABASE_URL heredada que la sobrescriba. El comando habitual `npm run db:migrate` usa apps/api/.env, que en este entorno apunta a localhost.
+4. Verificar que 012 y 013 constan en schema_migrations, que faltan ambas columnas y restaurants_legacy_id_key, y que siguen funcionando listado, edición, filtros por rango y creación con nuevos IDs numéricos.
+
+Las migraciones 012 y 013 se aplicaron en Neon el 22 de septiembre de 2026, después de validarlas en PostgreSQL local. No había precios antiguos no vacíos ni UUID antiguos. Se verificó la eliminación de ambas columnas y la conservación de los demás datos de restaurantes, la clave primaria y las restricciones de precio y usuario.

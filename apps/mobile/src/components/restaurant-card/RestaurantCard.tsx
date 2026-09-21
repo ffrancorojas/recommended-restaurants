@@ -43,13 +43,12 @@ export const RestaurantCard = ({ restaurant, onDelete, onEdit, onVisit }: Restau
           {restaurant.type.map((type) => (
             <AppText key={type} style={styles.tag} text={type} />
           ))}
-          {!!(restaurant.price || restaurant.legacyPrice) && (
+          {!!restaurant.price && (
             <AppText
               style={styles.price}
               numberOfLines={expanded ? undefined : 1}
               text={
                 PRICE_RANGES.find((range) => range.value === restaurant.price)?.label ??
-                restaurant.legacyPrice ??
                 ''
               }
             />

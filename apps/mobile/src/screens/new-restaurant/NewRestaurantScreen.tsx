@@ -11,7 +11,6 @@ export const NewRestaurantScreen = () => {
     form,
     scroll,
     viewportHeight,
-    legacyPrice,
     update,
     save,
     goBack,
@@ -41,7 +40,6 @@ export const NewRestaurantScreen = () => {
           visitOnly={visitOnly}
           opinionMinHeight={visitOnly ? Math.max(0, viewportHeight - 40) : undefined}
           onOpinionLayout={setOpinionY}
-          legacyPrice={legacyPrice}
         />
       </ScrollView>
     </ScreenLayout>

@@ -75,7 +75,6 @@ export const useNewRestaurantScreen = () => {
     form,
     scroll,
     viewportHeight,
-    legacyPrice: restaurants.find((item) => item.id === restaurantId)?.legacyPrice,
 
     update,
     save,

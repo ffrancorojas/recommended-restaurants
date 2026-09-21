@@ -21,13 +21,14 @@ test('crear, editar y filtrar admiten solo rangos de precio definidos', async ()
   assert.equal(plainToInstance(UpdateRestaurantDto, { name: 'Cambio' }).price, undefined);
 });
 
-test('el precio anterior se conserva como referencia al cargar datos antiguos', () => {
+test('descarta precios antiguos y conserva rangos al cargar datos guardados', () => {
   for (const price of ['25 €', '20–30 € por persona', 'Consultar carta']) {
     const converted = normalizeRestaurantPrice({ price, name: 'Prueba' });
-    assert.deepEqual(converted, { name: 'Prueba', price: '', legacyPrice: price });
+    assert.deepEqual(converted, { name: 'Prueba', price: '' });
     assert.deepEqual(normalizeRestaurantPrice(converted), converted);
   }
   const selected = { price: '20to40', legacyPrice: '25 €' };
-  assert.deepEqual(normalizeRestaurantPrice(selected), selected);
-  assert.deepEqual(normalizeRestaurantPrice({ price: '' }), { price: '', legacyPrice: '' });
+  assert.deepEqual(normalizeRestaurantPrice(selected), { price: '20to40' });
+  assert.equal(selected.legacyPrice, '25 €');
+  assert.deepEqual(normalizeRestaurantPrice({ price: '' }), { price: '' });
 });

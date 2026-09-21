@@ -81,7 +81,8 @@ test('migraciones repetibles, salud y documentación OpenAPI', async () => {
   assert.equal(result.status, 200);
   assert.deepEqual(result.body, { status: 'ok' });
   const migrations = await db.query('SELECT * FROM schema_migrations');
-  assert.equal(migrations.rowCount, 10);
+  assert.equal(migrations.rowCount, 13);
+  assert.equal((await db.query("SELECT to_regclass('email_confirmations') AS name")).rows[0].name, null);
   const docs = await fetch(`${baseUrl}/api/docs-json`).then((response) => response.json());
   assert.ok(docs.paths['/api/v1/restaurants/{id}'].patch);
 });
@@ -89,9 +90,10 @@ test('migraciones repetibles, salud y documentación OpenAPI', async () => {
 test('Google crea usuarios sin contraseña y guarda solo el hash de la sesión', async () => {
   assert.equal(owner.user.email, 'owner@example.com');
   assert.deepEqual(Object.keys(owner.user).sort(), ['createdAt', 'email', 'id', 'name', 'nick']);
-  const users = await db.query('SELECT password_hash, firebase_uid FROM users WHERE id = $1', [owner.user.id]);
+  const users = await db.query('SELECT password_hash, firebase_uid, email_verified_at FROM users WHERE id = $1', [owner.user.id]);
   assert.equal(users.rows[0].password_hash, null);
   assert.equal(users.rows[0].firebase_uid, 'google-owner');
+  assert.ok(users.rows[0].email_verified_at);
   const sessions = await db.query('SELECT token_hash FROM sessions WHERE user_id = $1', [owner.user.id]);
   assert.equal(sessions.rows[0].token_hash, createHash('sha256').update(owner.accessToken).digest('hex'));
   const again = await request('/auth/google', { method: 'POST', body: { idToken: tokenFor('owner') } });
@@ -133,6 +135,8 @@ test('crear restaurante, validar entrada y rechazar propietario suministrado por
   assert.equal(restaurant.price, '20to40');
   assert.deepEqual(restaurant.type, ['Tapas', 'Mediterráneo']);
   assert.equal('user_id' in restaurant, false);
+  assert.equal('legacyPrice' in restaurant, false);
+  assert.equal('legacy_id' in restaurant, false);
   for (const invalid of [{ name: ' ' }, { name: 'X', type: 'invalid' }, { name: 'X', notes: null }, { ...body, userId: other.user.id }]) {
     assert.equal((await request('/restaurants', { method: 'POST', token: owner.accessToken, body: invalid })).status, 400);
   }
@@ -183,7 +187,7 @@ test('rangos de precio se guardan, se filtran por igualdad y se pueden quitar', 
   await request(path, { method: 'PATCH', token, body: { price: '20to40' } });
 });
 
-test('migración de precios conserva texto antiguo y rangos ya elegidos', async () => {
+test('migraciones de precios descartan texto antiguo y conservan rangos elegidos', async () => {
   const { readFile } = require('node:fs/promises');
   const { join } = require('node:path');
   const client = await db.connect();
@@ -195,7 +199,11 @@ test('migración de precios conserva texto antiguo y rangos ya elegidos', async 
     assert.deepEqual((await client.query('SELECT price, legacy_price FROM restaurants ORDER BY id')).rows, [
       { price: '', legacy_price: '25 €' }, { price: '', legacy_price: '' }, { price: '20to40', legacy_price: '' },
     ]);
-    await assert.rejects(client.query("INSERT INTO restaurants VALUES (4, '25 €', '')"), { code: '23514' });
+    await client.query(await readFile(join(__dirname, '../migrations/012_drop_restaurant_legacy_price.sql'), 'utf8'));
+    assert.deepEqual((await client.query('SELECT * FROM restaurants ORDER BY id')).rows, [
+      { id: 1, price: '' }, { id: 2, price: '' }, { id: 3, price: '20to40' },
+    ]);
+    await assert.rejects(client.query("INSERT INTO restaurants VALUES (4, '25 €')"), { code: '23514' });
   } finally {
     await client.query('ROLLBACK');
     client.release();
@@ -214,6 +222,11 @@ test('PATCH conserva campos omitidos y rechaza null e identificadores inválidos
   const invalid = await request(`/restaurants/${restaurant.id}`, { method: 'PATCH', token: owner.accessToken, body: { notes: null } });
   assert.equal(invalid.status, 400);
   assert.equal((await request('/restaurants/not-a-uuid', { token: owner.accessToken })).status, 400);
+  for (const method of ['GET', 'PATCH', 'DELETE']) {
+    assert.equal((await request('/restaurants/00000000-0000-4000-8000-000000000001', {
+      method, token: owner.accessToken, ...(method === 'PATCH' ? { body: { name: 'Cambio' } } : {}),
+    })).status, 400);
+  }
 });
 
 test('tipos múltiples se actualizan, se vacían y se conservan cuando se omiten', async () => {

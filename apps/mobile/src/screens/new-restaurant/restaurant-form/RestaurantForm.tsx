@@ -17,7 +17,7 @@ import {
 } from './components';
 
 export const RestaurantForm = ({
-  value, onChange, onSave, visitOnly = false, onOpinionLayout, opinionMinHeight, legacyPrice,
+  value, onChange, onSave, visitOnly = false, onOpinionLayout, opinionMinHeight,
 }: RestaurantFormProps) => {
   const styles = useRestaurantFormStyles();
   const { restaurantTypes, typesError, reloadTypes, toggleType } =
@@ -30,7 +30,7 @@ export const RestaurantForm = ({
         <RestaurantNameField {...fieldProps} />
         <LocalityField {...fieldProps} />
         <DishesField {...fieldProps} />
-        <RestaurantPriceField {...fieldProps} legacyPrice={legacyPrice} />
+        <RestaurantPriceField {...fieldProps} />
         <RestaurantTypesField
           value={value}
           visitOnly={visitOnly}

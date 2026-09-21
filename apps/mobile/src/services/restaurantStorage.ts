@@ -40,8 +40,8 @@ export function allocateRestaurantId(): Promise<string> {
 }
 
 export async function loadRestaurants(): Promise<Restaurant[]> {
-  const store = await readStore();
-  return store.items.map((restaurant) => ({
+  return withStore((store) => {
+    store.items = store.items.map((restaurant) => ({
         ...normalizeRestaurantPrice(restaurant),
         type: normalizeRestaurantTypes(restaurant.type),
         recommendedBy: restaurant.recommendedBy ?? '',
@@ -49,6 +49,8 @@ export async function loadRestaurants(): Promise<Restaurant[]> {
         opinion: restaurant.opinion ?? '',
         rating: restaurant.rating ?? '',
       }));
+    return store.items;
+  });
 }
 export async function saveRestaurants(restaurants: Restaurant[]): Promise<void> {
   await withStore((store) => { store.items = restaurants; });

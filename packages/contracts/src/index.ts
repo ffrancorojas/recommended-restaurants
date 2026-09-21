@@ -32,13 +32,13 @@ export const PRICE_RANGES = [
 export type PriceRange = '' | (typeof PRICE_RANGES)[number]['value'];
 export const PRICE_RANGE_VALUES = ['', ...PRICE_RANGES.map((range) => range.value)];
 
-// Preserve old free-text prices as a reference until a range is selected.
+// Discard obsolete free-text prices and remove the retired field from saved data.
 export function normalizeRestaurantPrice<T extends { price: string; legacyPrice?: string }>(restaurant: T) {
+  const { legacyPrice: _discarded, ...current } = restaurant;
   const valid = PRICE_RANGE_VALUES.includes(restaurant.price);
   return {
-    ...restaurant,
+    ...current,
     price: (valid ? restaurant.price : '') as PriceRange,
-    legacyPrice: valid ? restaurant.legacyPrice ?? '' : restaurant.price,
   };
 }
 
@@ -56,7 +56,7 @@ export type RestaurantFormData = {
 };
 
 // PostgreSQL genera un BIGINT consecutivo; se transporta como texto para no perder precisión en JavaScript.
-export type Restaurant = RestaurantFormData & { id: string; createdAt: string; legacyPrice?: string };
+export type Restaurant = RestaurantFormData & { id: string; createdAt: string };
 export type User = { id: string; email: string; name: string; nick: string | null; createdAt: string };
 export type AuthSession = { accessToken: string; expiresAt: string; user: User };
 export type RestaurantPage = { items: Restaurant[]; limit: number; offset: number };
