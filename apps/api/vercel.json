@@ -3,6 +3,5 @@
   "framework": "nestjs",
   "regions": ["fra1"],
   "buildCommand": "npm run build --workspace=@restaurantes/contracts && npm run build --workspace=@restaurantes/api",
-  "installCommand": "npm ci --workspace=@restaurantes/api --workspace=@restaurantes/contracts --include-workspace-root",
-  "maxDuration": 30
+  "installCommand": "npm ci --workspace=@restaurantes/api --workspace=@restaurantes/contracts --include-workspace-root"
 }
