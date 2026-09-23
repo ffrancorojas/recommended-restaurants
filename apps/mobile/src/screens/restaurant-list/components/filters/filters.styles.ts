@@ -14,13 +14,13 @@ export const createFiltersStyles = (colors: AppColors) => StyleSheet.create({
   filters: { flexDirection: 'row', gap: 8, paddingBottom: 10 },
   mini: {
     flex: 1,
-    height: 38,
+    height: 52,
     backgroundColor: colors.surface,
-    borderRadius: 10,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: colors.border,
-    paddingHorizontal: 10,
-    fontSize: 13,
+    paddingHorizontal: 14,
+    fontSize: 15,
   },
   dropdownTrigger: {
     flexDirection: 'row',
