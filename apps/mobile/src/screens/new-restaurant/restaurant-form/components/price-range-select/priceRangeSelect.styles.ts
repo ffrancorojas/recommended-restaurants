@@ -8,5 +8,14 @@ export const createPriceRangeSelectStyles = (colors: AppColors) => StyleSheet.cr
     borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface,
   },
   text: { fontSize: 15, color: colors.text, flexShrink: 1 },
-  options: { marginTop: 6, borderWidth: 1, borderColor: colors.border, borderRadius: 12, overflow: 'hidden' },
+  options: {
+    marginTop: 6,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 12,
+    overflow: 'hidden',
+    backgroundColor: colors.surface,
+  },
+  item: { backgroundColor: colors.surface },
+  itemText: { fontSize: 15, color: colors.text, flexShrink: 1 },
 });

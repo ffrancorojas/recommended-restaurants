@@ -1,2 +1,2 @@
-export { PriceFilter, PriceFilterOptions } from './PriceFilter';
+export { PriceFilter } from './PriceFilter';
 export type { PriceFilterProps } from './priceFilter.types';

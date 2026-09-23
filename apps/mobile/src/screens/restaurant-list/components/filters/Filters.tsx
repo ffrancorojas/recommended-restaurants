@@ -2,7 +2,6 @@ import { View } from 'react-native';
 import {
   LocalityFilter,
   PriceFilter,
-  PriceFilterOptions,
   SearchFilter,
   TypesFilter,
   VisitedFilter,
@@ -32,7 +31,6 @@ export const Filters = ({
         <LocalityFilter locality={locality} updateFiltersValue={updateFiltersValue} />
         <PriceFilter priceOpen={filtersOpen.priceOpen} price={price} {...dropdownProps} />
       </View>
-      <PriceFilterOptions priceOpen={filtersOpen.priceOpen} price={price} {...dropdownProps} />
       <TypesFilter
         typesOpen={filtersOpen.typesOpen}
         types={types}
