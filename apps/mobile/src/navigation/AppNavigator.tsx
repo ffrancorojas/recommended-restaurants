@@ -13,7 +13,6 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export function AppNavigator() {
   const colors = useAppColors();
-  const [demoEntered, setDemoEntered] = useState(false);
   const [session, setSession] = useState<AuthSession>();
   const [restoring, setRestoring] = useState(true);
   const [restoreError, setRestoreError] = useState('');
@@ -46,26 +45,24 @@ export function AppNavigator() {
     try {
       if (session) await closeSession(session);
       setSession(undefined);
-      setDemoEntered(false);
     } catch {
       Alert.alert('No se pudo cerrar la sesión', 'Comprueba la conexión y vuelve a intentarlo.');
     } finally { loggingOut.current = false; }
   };
 
-  if (restoring || (restoreError && !demoEntered)) {
+  if (restoring || restoreError) {
     return <View style={{ flex: 1, justifyContent: 'center', padding: 24, backgroundColor: colors.background }}>
       {restoring ? <ActivityIndicator color={colors.primary} accessibilityLabel="Recuperando sesión" /> : <>
         <AppText text={restoreError} />
         <AppButton label="Reintentar" onPress={() => setAttempt((value) => value + 1)} />
-        <AppButton label="Entrar en la demo" variant="secondary" onPress={() => setDemoEntered(true)} />
       </>}
     </View>;
   }
-  if (!demoEntered && !session) {
-    return <LoginScreen onLogin={setSession} onDemoLogin={() => setDemoEntered(true)} />;
+  if (!session) {
+    return <LoginScreen onLogin={setSession} />;
   }
   return (
-    <RestaurantProvider key={session?.user.id ?? 'demo'} session={session}>
+    <RestaurantProvider key={session.user.id} session={session}>
       <Stack.Navigator screenOptions={{ headerShown: false, animation: 'slide_from_right' }}>
         <Stack.Screen name="Home">
           {(props) => <HomeScreen {...props} onLogout={logout} />}
