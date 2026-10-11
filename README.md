@@ -6,9 +6,7 @@ Monorepo con npm workspaces: aplicación Expo y backend NestJS con PostgreSQL.
 
 - **API:** desplegada en Vercel y conectada a PostgreSQL en Neon. El acceso usa Google a través de Firebase Authentication, con sesiones revocables y restaurantes privados por usuario. Incluye búsqueda, filtros y paginación.
 - **Android:** el acceso con Google y la conexión a la API se han probado en un APK. La sesión de la API se guarda con Expo SecureStore y se comprueba al abrir la app. Dura siete días; después se vuelve a entrar con Google. La interfaz sigue el modo claro u oscuro del dispositivo.
-- **Demo:** conserva sus datos en AsyncStorage, sin cuenta ni sincronización. Sigue disponible en Expo Go y otras plataformas. No se importa automáticamente a una cuenta.
-- **Google Play:** hay perfiles EAS separados para APK de prueba con Google (`preview-google`) y AAB para tienda (`production-google`). El AAB actual se generó antes de los últimos cambios visuales y habrá que regenerarlo al terminar las pruebas.
-- **Demo:** el perfil EAS `preview` continúa siendo solo demo.
+- **Google Play:** hay perfiles EAS para APK de prueba (`preview`) y AAB para tienda (`production`), ambos con login de Google y datos sincronizados con la API.
 
 ## Estructura
 
@@ -82,7 +80,7 @@ npm run api:start
 
 ## APK para compartir (Android)
 
-Los perfiles `preview` y `preview-google` de `apps/mobile/eas.json` generan APK independientes, sin Expo Go ni servidor de desarrollo. `preview` ofrece únicamente la demo, con datos guardados en el dispositivo. `preview-google` usa el login de Google y la API pública; los datos quedan en PostgreSQL en Neon. Las búsquedas de Google y Maps necesitan internet.
+El perfil `preview` de `apps/mobile/eas.json` genera un APK independiente con login de Google y API pública. El perfil `production` genera el AAB de tienda. Las búsquedas de Google y Maps necesitan internet.
 
 Desde `apps/mobile`, inicia sesión en tu cuenta de Expo y genera el APK:
 
@@ -106,9 +104,9 @@ Referencia: [APK con EAS Build](https://docs.expo.dev/build-reference/apk/).
 5. Ejecuta las migraciones antes de iniciar la nueva API. La migración `010_google_auth.sql` añade el UID de Firebase y permite usuarios sin contraseña, conservando usuarios y restaurantes anteriores.
 6. Configura `EXPO_PUBLIC_API_URL` con la API accesible desde el móvil (incluye `/api/v1`). Usa HTTPS para el despliegue público y nunca pongas la conexión de Neon en variables `EXPO_PUBLIC_*`.
 
-La librería nativa de Google no funciona en Expo Go: para probar el login hace falta un nuevo APK o development build. El botón solo se ofrece en Android nativo configurado y con `EXPO_PUBLIC_DEMO_ONLY=false`.
+La librería nativa de Google no funciona en Expo Go: para probar el login hace falta un nuevo APK o development build. El botón solo se ofrece en Android nativo configurado.
 
-Para EAS, el archivo ignorado se suministra mediante una variable **File** llamada `GOOGLE_SERVICES_JSON`, en el entorno de la compilación. `app.config.js` admite esa ruta o el archivo local. `EXPO_PUBLIC_API_URL` apunta a la API pública en los entornos `preview` y `production`; `preview-google` genera el APK de prueba y `production-google` genera el AAB. El perfil `preview` conserva la demo. No se deben subir claves privadas ni archivos de conexión de la API a EAS.
+Para EAS, el archivo ignorado se suministra mediante una variable **File** llamada `GOOGLE_SERVICES_JSON`, en el entorno de la compilación. `app.config.js` admite esa ruta o el archivo local. `EXPO_PUBLIC_API_URL` apunta a la API pública en los entornos `preview` y `production`. No se deben subir claves privadas ni archivos de conexión de la API a EAS.
 
 Flujo: Google entrega su credencial al SDK nativo de Firebase; la app obtiene un **ID token de Firebase**, lo envía a `POST /api/v1/auth/google` y recibe una sesión propia de la API. La API comprueba firma, caducidad, proyecto emisor, proveedor Google y correo verificado; no acepta un correo o UID aportados por el cliente. El token Google no sustituye al token Firebase en ese endpoint.
 
@@ -138,7 +136,7 @@ El listado devuelve `{ items, limit, offset }` y admite `query`, `locality`, `pr
 
 ## Verificación
 
-Los restaurantes usan IDs `BIGINT GENERATED ALWAYS AS IDENTITY`, asignados por PostgreSQL (`1`, `2`, `3`…). La API los devuelve como cadenas para preservar su precisión. La migración histórica `003` numeró los restaurantes existentes por fecha de creación. Las rutas exigen el ID numérico; la migración `013` retira la copia del UUID antiguo y su restricción única, sin cambiar la clave primaria ni la secuencia. Los usuarios mantienen su UUID. Las secuencias pueden tener huecos por borrados o transacciones fallidas. La demo local utiliza su propio contador persistente y migra los datos anteriores a un almacenamiento `v2`, conservando el original como respaldo.
+Los restaurantes usan IDs `BIGINT GENERATED ALWAYS AS IDENTITY`, asignados por PostgreSQL (`1`, `2`, `3`…). La API los devuelve como cadenas para preservar su precisión. La migración histórica `003` numeró los restaurantes existentes por fecha de creación. Las rutas exigen el ID numérico; la migración `013` retira la copia del UUID antiguo y su restricción única, sin cambiar la clave primaria ni la secuencia. Los usuarios mantienen su UUID. Las secuencias pueden tener huecos por borrados o transacciones fallidas.
 
 Cada restaurante incluye `visited` (booleano, inicialmente `false`) y `opinion` (texto de hasta 4000 caracteres). En el formulario, «Ya he estado» permite escribir la opinión; la tarjeta muestra «✓ Visitado» y la opinión aparece al desplegarla. Desmarcar la visita conserva el texto para recuperarlo después. El interruptor «Solo visitados» combina este criterio con los demás filtros y limita también los tipos disponibles; apagado muestra todos. La API ofrece el mismo filtro con `?visitedOnly=true` (`false` muestra todos). Aplica la nueva migración con `npm run db:migrate`. Los datos locales anteriores reciben los valores predeterminados al cargarse.
 
@@ -154,7 +152,7 @@ Para detener PostgreSQL conservando los datos: `npm run db:down`.
 
 ## Próximos pasos
 
-La API en Vercel y la base persistente en Neon ya están en uso; el login de Google se probó en Android. Los siguientes pasos son completar la verificación de Play Console, terminar de revisar la interfaz clara/oscura y generar el AAB actualizado para las pruebas de Play. Antes de publicar también hay que ofrecer la eliminación de cuenta/datos y las páginas de privacidad necesarias. La importación de datos de la demo es una mejora pendiente.
+La API en Vercel y la base persistente en Neon ya están en uso; el login de Google se probó en Android. Los siguientes pasos son completar la verificación de Play Console, terminar de revisar la interfaz clara/oscura y generar el AAB actualizado para las pruebas de Play. Antes de publicar también hay que ofrecer la eliminación de cuenta/datos y las páginas de privacidad necesarias.
 
 El límite de peticiones actual está en memoria y está pensado para una instancia de API; hay que revisarlo para un despliegue con múltiples instancias.
 
@@ -173,7 +171,7 @@ Referencias: [Google con Expo](https://docs.expo.dev/guides/google-authenticatio
 
 En cada tarjeta pendiente, «Registrar visita» abre la edición y desplaza el formulario a «Mi opinión». En este modo los datos del restaurante están deshabilitados; se permite escribir la experiencia y elegir 😍 «Me encantó», 😊 «Me gustó», 😐 «Normal», 🙁 «No me gustó» o 😞 «Me decepcionó». «Guardar visita» confirma los cambios; volver sin guardar conserva el estado anterior. La tarjeta plegada muestra un marcador de ubicación con confirmación integrada y la valoración, sin texto de estado. El lápiz mantiene la edición completa.
 
-La valoración se conserva en la demo local y en la API. Los registros antiguos empiezan sin valoración. Antes de arrancar la API actualizada, ejecuta `npm run db:migrate` para aplicar `005_restaurant_rating.sql` y `006_restaurant_rating_options.sql`.
+La valoración se conserva en la API. Los registros antiguos empiezan sin valoración. Antes de arrancar la API actualizada, ejecuta `npm run db:migrate` para aplicar `005_restaurant_rating.sql` y `006_restaurant_rating_options.sql`.
 
 Las valoraciones se representan con caritas propias de colores: verde intenso, verde claro, amarillo, naranja y rojo, de mejor a peor experiencia. Las expresiones y las etiquetas distinguen las opciones también sin depender del color.
 
@@ -181,13 +179,13 @@ Las valoraciones se representan con caritas propias de colores: verde intenso, v
 
 El formulario permite marcar varios tipos de local y las tarjetas muestran todas las etiquetas seleccionadas. El filtro encuentra los restaurantes que tengan cualquiera de los tipos elegidos.
 
-El campo `type` se guarda como una lista; la API también acepta el texto de los clientes anteriores. Ejecuta `npm run db:migrate` antes de iniciar la API actualizada para aplicar `008_restaurant_multiple_types.sql`: convierte los tipos existentes en listas sin perder la selección y los campos vacíos en listas vacías. La demo local convierte sus registros al cargarlos.
+El campo `type` se guarda como una lista; la API también acepta el texto de los clientes anteriores. Ejecuta `npm run db:migrate` antes de iniciar la API actualizada para aplicar `008_restaurant_multiple_types.sql`: convierte los tipos existentes en listas sin perder la selección y los campos vacíos en listas vacías.
 
 ## Rangos de precio
 
 El formulario y el filtro ofrecen los mismos seis rangos de precio. `price` almacena la clave elegida (`under20`, `20to40`, `40to60`, `60to80`, `80to100` u `over100`), o `''` si no se especifica. El filtro compara la clave directamente.
 
-La selección por rangos se conserva en `price`. La migración `012_drop_restaurant_legacy_price.sql` elimina los textos antiguos guardados en `legacy_price`; la API, las tarjetas y el formulario ya no los devuelven ni muestran. Al cargar la demo se elimina `legacyPrice` del almacenamiento activo v2 y los precios libres se convierten en una selección vacía, sin alterar rangos válidos ni IDs. La copia histórica v1 de la demo permanece como respaldo. Los restaurantes sin rango siguen apareciendo en «Todos los precios».
+La selección por rangos se conserva en `price`. La migración `012_drop_restaurant_legacy_price.sql` elimina los textos antiguos guardados en `legacy_price`; la API, las tarjetas y el formulario ya no los devuelven ni muestran. Los restaurantes sin rango siguen apareciendo en «Todos los precios».
 
 
 ## Retirada de campos antiguos (012 y 013)

@@ -116,7 +116,7 @@ test('cerrar sesión revoca en el servidor y elimina SecureStore', async () => {
   assert.equal(context.getStored(), null);
 });
 
-test('Expo Go conserva la demo y no carga módulos nativos de Google o Firebase', async () => {
+test('Expo Go no carga módulos nativos de Google o Firebase', async () => {
   const context = setup({ expoGo: true });
   assert.equal(context.auth.googleLoginAvailable, false);
   assert.equal(await context.auth.restoreSession(), undefined);

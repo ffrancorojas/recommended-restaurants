@@ -7,10 +7,9 @@ import { ApiError, authenticatedRequest, exchangeGoogleToken } from './authApi';
 const SESSION_KEY = 'restaurantes.google.session.v1';
 export const googleLoginAvailable = Platform.OS === 'android'
   && Constants.executionEnvironment !== ExecutionEnvironment.StoreClient
-  && process.env.EXPO_PUBLIC_DEMO_ONLY !== 'true'
   && Boolean(Constants.expoConfig?.extra?.googleWebClientId);
 
-// Lazy loading keeps the offline demo usable in Expo Go and on other platforms.
+// Lazy loading keeps unsupported platforms from importing native authentication modules.
 function nativeAuth() {
   if (!googleLoginAvailable) throw new Error('El acceso con Google estará disponible en la app Android.');
   const google = require('@react-native-google-signin/google-signin') as typeof import('@react-native-google-signin/google-signin');
