@@ -17,6 +17,11 @@ export class RestaurantsController {
     return this.restaurants.list(req.user.id, filters);
   }
 
+  @Get('recommenders')
+  listRecommenders(@Req() req: AuthRequest) {
+    return this.restaurants.listRecommenders(req.user.id);
+  }
+
   @Post()
   create(@Req() req: AuthRequest, @Body() data: CreateRestaurantDto) {
     return this.restaurants.create(req.user.id, data);

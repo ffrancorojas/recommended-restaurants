@@ -33,6 +33,18 @@ export class RestaurantsService {
     return { items: result.rows.map(serialize), limit: filters.limit, offset: filters.offset };
   }
 
+  async listRecommenders(userId: string): Promise<string[]> {
+    const result = await this.db.query<{ recommender: string }>(
+      `SELECT MIN(BTRIM(recommended_by)) AS recommender
+       FROM restaurants
+       WHERE user_id = $1 AND BTRIM(recommended_by) <> ''
+       GROUP BY LOWER(BTRIM(recommended_by))
+       ORDER BY LOWER(MIN(BTRIM(recommended_by))), MIN(BTRIM(recommended_by))`,
+      [userId],
+    );
+    return result.rows.map(({ recommender }) => recommender);
+  }
+
   async get(userId: string, id: string): Promise<Restaurant> {
     const result = await this.db.query<RestaurantRow>(
       `SELECT ${columns} FROM restaurants WHERE id = $1 AND user_id = $2`, [id, userId],
