@@ -59,4 +59,4 @@ export type RestaurantFormData = {
 export type Restaurant = RestaurantFormData & { id: string; createdAt: string };
 export type User = { id: string; email: string; name: string; nick: string | null; createdAt: string };
 export type AuthSession = { accessToken: string; expiresAt: string; user: User };
-export type RestaurantPage = { items: Restaurant[]; limit: number; offset: number };
+export type RestaurantPage = { items: Restaurant[]; limit: number; offset: number; total: number };
