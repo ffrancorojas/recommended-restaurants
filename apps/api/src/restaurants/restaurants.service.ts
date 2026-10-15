@@ -1,6 +1,8 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { Pool } from 'pg';
-import type { Restaurant, RestaurantFormData, RestaurantPage } from '@restaurantes/contracts';
+import ExcelJS from 'exceljs';
+import { PRICE_RANGES, RESTAURANT_RATINGS } from '@restaurantes/contracts';
+import type { Restaurant, RestaurantFormData, RestaurantPage, RestaurantType, User } from '@restaurantes/contracts';
 import { DATABASE } from '../database/database.module';
 import { CreateRestaurantDto, ListRestaurantsDto, UpdateRestaurantDto } from './restaurant.dto';
 
@@ -19,18 +21,113 @@ const pattern = (text: string) => `%${text.replace(/[\\%_]/g, '\\$&')}%`;
 export class RestaurantsService {
   constructor(@Inject(DATABASE) private readonly db: Pool) {}
 
-  async list(userId: string, filters: ListRestaurantsDto): Promise<RestaurantPage> {
+  async exportExcel(user: User): Promise<Buffer> {
     const result = await this.db.query<RestaurantRow>(
       `SELECT ${columns} FROM restaurants WHERE user_id = $1
+       ORDER BY created_at DESC, id DESC`,
+      [user.id],
+    );
+
+    const workbook = new ExcelJS.Workbook();
+    workbook.creator = 'Restaurantes recomendados';
+    workbook.created = new Date();
+
+    const userSheet = workbook.addWorksheet('Usuario');
+    userSheet.columns = [
+      { header: 'ID', key: 'id', width: 38 },
+      { header: 'Nombre', key: 'name', width: 28 },
+      { header: 'Correo electrónico', key: 'email', width: 36 },
+      { header: 'Alias', key: 'nick', width: 24 },
+      { header: 'Fecha de creación', key: 'createdAt', width: 22 },
+    ];
+    userSheet.addRow({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      nick: user.nick ?? '',
+      createdAt: new Date(user.createdAt),
+    });
+    userSheet.getColumn('createdAt').numFmt = 'dd/mm/yyyy hh:mm';
+
+    const restaurantSheet = workbook.addWorksheet('Restaurantes');
+    restaurantSheet.columns = [
+      { header: 'ID', key: 'id', width: 18 },
+      { header: 'Nombre', key: 'name', width: 30 },
+      { header: 'Localidad', key: 'locality', width: 24 },
+      { header: 'Platos recomendados', key: 'dishes', width: 40 },
+      { header: 'Precio', key: 'price', width: 20 },
+      { header: 'Tipos de comida', key: 'type', width: 30 },
+      { header: 'Observaciones', key: 'notes', width: 44 },
+      { header: 'Recomendado por', key: 'recommendedBy', width: 24 },
+      { header: 'Visitado', key: 'visited', width: 12 },
+      { header: 'Opinión', key: 'opinion', width: 44 },
+      { header: 'Valoración', key: 'rating', width: 20 },
+      { header: 'Fecha de creación', key: 'createdAt', width: 22 },
+    ];
+
+    for (const restaurant of result.rows.map(serialize)) {
+      restaurantSheet.addRow({
+        ...restaurant,
+        price: PRICE_RANGES.find(({ value }) => value === restaurant.price)?.label ?? '',
+        type: restaurant.type.join(', '),
+        visited: restaurant.visited ? 'Sí' : 'No',
+        rating: RESTAURANT_RATINGS.find(({ value }) => value === restaurant.rating)?.label ?? '',
+        createdAt: new Date(restaurant.createdAt),
+      });
+    }
+
+    for (const sheet of [userSheet, restaurantSheet]) {
+      sheet.getRow(1).font = { bold: true };
+      sheet.views = [{ state: 'frozen', ySplit: 1 }];
+      sheet.autoFilter = {
+        from: { row: 1, column: 1 },
+        to: { row: 1, column: sheet.columnCount },
+      };
+    }
+    restaurantSheet.getColumn('createdAt').numFmt = 'dd/mm/yyyy hh:mm';
+
+    return Buffer.from(await workbook.xlsx.writeBuffer());
+  }
+
+  async list(userId: string, filters: ListRestaurantsDto): Promise<RestaurantPage> {
+    const where = `user_id = $1
        AND concat_ws(' ', name, locality, dishes, notes, recommended_by) ILIKE $2
        AND locality ILIKE $3 AND ($4 = '' OR price = $4)
        AND (cardinality($5::text[]) = 0 OR type && $5::text[])
-       AND (NOT $8::boolean OR visited)
-       ORDER BY created_at DESC, id DESC LIMIT $6 OFFSET $7`,
-      [userId, pattern(filters.query), pattern(filters.locality), filters.price,
-        filters.types, filters.limit, filters.offset, filters.visitedOnly],
+       AND (NOT $6::boolean OR visited)`;
+    const filterValues = [
+      userId,
+      pattern(filters.query),
+      pattern(filters.locality),
+      filters.price,
+      filters.types,
+      filters.visitedOnly,
+    ];
+    const count = await this.db.query<{ total: string }>(
+      `SELECT COUNT(*)::text AS total FROM restaurants WHERE ${where}`,
+      filterValues,
     );
-    return { items: result.rows.map(serialize), limit: filters.limit, offset: filters.offset };
+    const total = Number(count.rows[0]?.total ?? 0);
+    const lastPageOffset = Math.max(0, Math.ceil(total / filters.limit) - 1) * filters.limit;
+    const offset = Math.min(filters.offset, lastPageOffset);
+    const result = await this.db.query<RestaurantRow>(
+      `SELECT ${columns} FROM restaurants WHERE ${where}
+       ORDER BY created_at DESC, id DESC LIMIT $7 OFFSET $8`,
+      [...filterValues, filters.limit, offset],
+    );
+    return { items: result.rows.map(serialize), limit: filters.limit, offset, total };
+  }
+
+  async listTypes(userId: string): Promise<RestaurantType[]> {
+    const result = await this.db.query<{ type: RestaurantType }>(
+      `SELECT DISTINCT restaurant_type AS type
+       FROM restaurants
+       CROSS JOIN LATERAL unnest(restaurants.type) AS restaurant_type
+       WHERE user_id = $1
+       ORDER BY restaurant_type`,
+      [userId],
+    );
+    return result.rows.map(({ type }) => type);
   }
 
   async listRecommenders(userId: string): Promise<string[]> {
