@@ -1,6 +1,6 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Query, Req, StreamableFile, UseGuards } from '@nestjs/common';
 import { RestaurantIdPipe } from './restaurant-id.pipe';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiProduces, ApiTags } from '@nestjs/swagger';
 import { AuthGuard, AuthRequest } from '../auth/auth.guard';
 import { CreateRestaurantDto, ListRestaurantsDto, UpdateRestaurantDto } from './restaurant.dto';
 import { RestaurantsService } from './restaurants.service';
@@ -15,6 +15,22 @@ export class RestaurantsController {
   @Get()
   list(@Req() req: AuthRequest, @Query() filters: ListRestaurantsDto) {
     return this.restaurants.list(req.user.id, filters);
+  }
+
+  @Get('types')
+  listTypes(@Req() req: AuthRequest) {
+    return this.restaurants.listTypes(req.user.id);
+  }
+
+  @Get('export')
+  @ApiProduces('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+  async export(@Req() req: AuthRequest) {
+    const buffer = await this.restaurants.exportExcel(req.user);
+    return new StreamableFile(buffer, {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      disposition: 'attachment; filename="mis-restaurantes.xlsx"',
+      length: buffer.length,
+    });
   }
 
   @Get('recommenders')
