@@ -11,6 +11,15 @@ export class AuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<AuthRequest>();
+    if (
+      process.env.LOCAL_AUTH_BYPASS === 'true' &&
+      process.env.NODE_ENV === 'development' &&
+      !process.env.VERCEL
+    ) {
+      request.user = await this.auth.getLocalDevelopmentUser();
+      request.token = '0'.repeat(64);
+      return true;
+    }
     const match = /^Bearer ([a-f0-9]{64})$/i.exec(request.headers.authorization ?? '');
     if (!match) throw new UnauthorizedException('Debes iniciar sesión.');
     request.token = match[1];

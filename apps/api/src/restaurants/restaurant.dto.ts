@@ -38,10 +38,10 @@ export class CreateRestaurantDto implements RestaurantFormData {
   @IsIn(RESTAURANT_TYPES, { each: true })
   type: RestaurantType[] = [];
 
-  @ApiPropertyOptional({ default: '', maxLength: 4000 })
+  @ApiPropertyOptional({ default: '', maxLength: 8200 })
   @Transform(trim)
   @IsString()
-  @MaxLength(4000)
+  @MaxLength(8200)
   notes = '';
 
   @ApiPropertyOptional({ default: '', maxLength: 160 })

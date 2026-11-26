@@ -15,6 +15,16 @@ const tokenHash = (token: string) => createHash('sha256').update(token).digest('
 export class AuthService {
   constructor(@Inject(DATABASE) private readonly db: Pool, private readonly firebase: FirebaseTokenService) {}
 
+  async getLocalDevelopmentUser(): Promise<User> {
+    const result = await this.db.query<UserRow>(
+      `INSERT INTO users (id, firebase_uid, email, name, email_verified_at)
+       VALUES ('00000000-0000-4000-8000-000000000001', 'local-development', 'local@localhost.invalid', 'Usuario local', now())
+       ON CONFLICT (email) DO UPDATE SET name = EXCLUDED.name
+       RETURNING *`,
+    );
+    return publicUser(result.rows[0]);
+  }
+
   async loginWithGoogle(idToken: string): Promise<AuthSession> {
     const identity = await this.firebase.verify(idToken);
     const client = await this.db.connect();

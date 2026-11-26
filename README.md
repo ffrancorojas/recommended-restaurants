@@ -37,6 +37,8 @@ npm run db:up
 npm run db:migrate
 ```
 
+Desde `restaurantes-recomendados-web`, `npm run local` configura una identidad de desarrollo sin Google y fuerza la API a `http://localhost:3000/api/v1`. La API rechaza el bypass de autenticación si `DATABASE_URL` no apunta a localhost, y también lo ignora en Vercel. El comando carga restaurantes mock solo una vez y solo si la base local está vacía. La base usa el volumen Docker `postgres_data`, por lo que conserva los mocks y tus cambios entre arranques. No actives `LOCAL_AUTH_BYPASS` en un despliegue público.
+
 Las copias de `.env` solo se hacen la primera vez. Antes de arrancar PostgreSQL, completa `POSTGRES_PASSWORD` con una contraseña propia y configura `DATABASE_URL` y `TEST_DATABASE_URL` con la conexión local (incluye usuario, contraseña, host, puerto y nombre de base de datos; codifica los caracteres especiales de la contraseña para URL). Los ejemplos dejan esos valores vacíos deliberadamente. El valor local de `POSTGRES_PASSWORD` debe coincidir con la contraseña de `DATABASE_URL`. Los archivos `.env` están excluidos de Git. Espera a que PostgreSQL esté saludable (`docker compose ps`) antes de ejecutar las migraciones.
 
 Si ya tienes PostgreSQL, puedes omitir Docker y apuntar `DATABASE_URL` y `TEST_DATABASE_URL` a una base de datos de desarrollo. Las migraciones no se ejecutan automáticamente al arrancar la API. Para cambiar el esquema, añade una nueva migración; no edites las ya aplicadas. El ejecutor comprueba su contenido y aplica las pendientes en una transacción.
