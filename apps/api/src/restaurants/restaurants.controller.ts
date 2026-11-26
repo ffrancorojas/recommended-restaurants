@@ -22,6 +22,11 @@ export class RestaurantsController {
     return this.restaurants.listTypes(req.user.id);
   }
 
+  @Get('localities')
+  listLocalities(@Req() req: AuthRequest) {
+    return this.restaurants.listLocalities(req.user.id);
+  }
+
   @Get('export')
   @ApiProduces('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
   async export(@Req() req: AuthRequest) {
