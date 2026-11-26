@@ -130,6 +130,20 @@ export class RestaurantsService {
     return result.rows.map(({ type }) => type);
   }
 
+  async listLocalities(userId: string): Promise<string[]> {
+    const result = await this.db.query<{ locality: string }>(
+      `SELECT locality
+       FROM (
+         SELECT DISTINCT BTRIM(locality) AS locality
+         FROM restaurants
+         WHERE user_id = $1 AND BTRIM(locality) <> ''
+       ) AS available_localities
+       ORDER BY LOWER(locality), locality`,
+      [userId],
+    );
+    return result.rows.map(({ locality }) => locality);
+  }
+
   async listRecommenders(userId: string): Promise<string[]> {
     const result = await this.db.query<{ recommender: string }>(
       `SELECT MIN(BTRIM(recommended_by)) AS recommender
